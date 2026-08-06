@@ -1,7 +1,7 @@
 # Báo cáo kiểm tra dữ liệu corrupted
 
 Được tạo từ `data/clean/papers_clean.json`,
-`data/clean/papers_corrupted.json` và
+`data/clean/papers_clean_corrupted.json` và
 `data/results/corruption_log.json` vào ngày 2026-08-06.
 
 ## Kết quả: ĐẠT, kèm các giới hạn quan sát đã được nêu rõ
@@ -12,14 +12,14 @@ operation đều đạt.
 
 | Hạng mục kiểm tra | Kết quả |
 | --- | --- |
-| Số dòng baseline / corrupted | 24 / 24 |
+| Số dòng baseline / corrupted | 24 / 25 |
 | Schema khớp baseline và clean contract | ĐẠT (16 cột, cùng thứ tự) |
 | Số operation được log | 11 |
-| Record baseline bị thiếu | 2 (`10.1111/exsy.70341`, `10.2118/234689-pa`) |
-| ID near-duplicate mới | `10.21203/rs.3.rs-10178277/v1#near-duplicate` |
-| `paper_id` bị trùng | `10.1007/s10278-026-02086-9` |
+| Record baseline bị thiếu | 1 (`10.1111/exsy.70341`) |
+| ID near-duplicate mới | `10.1007/s10278-026-02086-9#near-duplicate` |
+| `paper_id` bị trùng | `10.2118/234689-pa` |
 
-Chênh lệch số dòng bằng 0 là đúng chủ đích: `drop_latest` xóa hai dòng,
+Chênh lệch số dòng là +1 đúng với log hiện tại: `drop_latest` xóa một dòng,
 sau đó `duplicate_row` và `semantic_near_duplicate` mỗi operation thêm một
 dòng.
 
@@ -39,7 +39,7 @@ mục tiêu mô phỏng lỗi:
 
 | Kiểm tra | Kết quả | Bằng chứng |
 | --- | --- | --- |
-| Số dòng >= 20 | PASS | 24 dòng |
+| Số dòng >= 20 | PASS | 25 dòng |
 | `paper_id` không rỗng | PASS | 0 ID rỗng |
 | `paper_id` duy nhất | FAIL | 1 ID trùng |
 | Title không rỗng | PASS | 0 title rỗng |
@@ -63,8 +63,9 @@ Frozen C2 hiện có 12 câu hỏi trên 3 `paper_id` khác nhau. Tất cả 11 
 đều có ít nhất một `frozen_test_overlap_record_ids` trong corruption log;
 `frozen_test_set.all_operations_overlap` là `true`. Vì vậy các lỗi đã đụng trực
 tiếp tài liệu được hỏi bởi C2 và có thể tạo thay đổi đo được ở retrieval/agent
-evaluation. Cần chạy lại evaluation trên corrupted index để ghi nhận mức thay
-đổi metrics cụ thể.
+evaluation. Kết quả evaluation hiện tại trên corrupted index là retrieval hit
+rate 66.7%, token F1 0.3495, judge accuracy 33.3% và mean judge score 2.50;
+repaired phục hồi về baseline 100%, 1.0000, 100% và 5.00.
 
 ## Giới hạn phát hiện lỗi
 
