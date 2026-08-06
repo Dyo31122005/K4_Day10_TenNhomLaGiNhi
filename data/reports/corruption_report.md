@@ -17,7 +17,7 @@ This report demonstrates the impact of data quality issues (corruption) on the p
 | **Mean Token F1-score** | 1.0000 | 0.4600 | 1.0000 | -0.5400 |
 | **LLM Judge Accuracy** | 100.0% | 41.7% | 100.0% | -58.3% |
 | **Mean Judge Score (1-5)** | 5.00 | 3.08 | 5.00 | -1.9167 |
-| **Total Rows** | 12 | 12 | 12 | 0 |
+| **Total Rows** | 24 | 23 | 24 | -1 |
 | **Quality Status** | PASS | FAIL | PASS | - |
 | **Freshness Status** | FRESH | STALE | FRESH | - |
 
@@ -34,7 +34,25 @@ This report demonstrates the impact of data quality issues (corruption) on the p
 
 ---
 
-## 4. Recovery Validation
+## 4. Query Analysis (Hit vs Miss Example)
+We analyzed query **`q_001`** across all three phases:
+- **Query**: `"Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'"`
+- **Baseline (Clean)**:
+  * **Retrieval**: **HIT** (Retrieved correct paper ID `10.1111/exsy.70341` at Rank 1).
+  * **RAG Answer**: Correctly summarized Hi-RAG.
+  * **LLM Judge Score**: **5/5 (Correct: True)**.
+- **Corrupted**:
+  * **Retrieval**: **MISS** (The paper `10.1111/exsy.70341` was completely removed by the `drop_latest` corruption operation).
+  * **RAG Answer**: The agent retrieved an unrelated paper on "Deep RAG" (`10.36227/techrxiv.177272838.89432844/v1`) and summarized it instead.
+  * **LLM Judge Score**: **2/5 (Correct: False)**.
+- **Repaired (Recovered)**:
+  * **Retrieval**: **HIT** (Retrieved correct paper ID `10.1111/exsy.70341` at Rank 1).
+  * **RAG Answer**: Correctly summarized Hi-RAG.
+  * **LLM Judge Score**: **5/5 (Correct: True)**.
+
+---
+
+## 5. Recovery Validation
 - **Retrieval Hit Rate**: fully recovered
 - **Token F1**: fully recovered
 - **Judge Accuracy**: fully recovered
