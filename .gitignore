@@ -18,3 +18,9 @@ backend/__pycache__/
 
 # reference-only UI template (Figma Make export, not part of the lab deliverable)
 Premium AI Chatbot Web App/
+
+# package locks and logs
+package-lock.json
+package-log.json
+**/package-lock.json
+**/package-log.json
