@@ -18,7 +18,7 @@
 | 1 | Nguyễn Minh Đạt | [MSSV] | Pipeline integrator (lead) | `src/core/` · `src/pipelines/` |
 | 2 | Nguyễn Hùng Mạnh | [MSSV] | Ingestion owner (ingest) | `src/ingestion/crossref.py` · `data/raw/` |
 | 3 | Trần Hoàng Mai Anh | [MSSV] | Cleaning & corruption owner (clean) | `src/ingestion/cleaning.py` · `src/ingestion/corruption.py` |
-| 4 | Nguyễn Hương Trà | [MSSV] | RAG & agent owner (rag) | `src/retrieval/` · `data/embeddings/` |
+| 4 | Nguyễn Hương Trà | 2A202601416 | RAG & agent owner (rag) | `src/retrieval/` · `data/embeddings/` |
 | 5 | Hà Anh Tuấn | [MSSV] | Evaluation & observability (eval\|observe) | `src/evaluation/` · `src/observability/` |
 
 ## 2. Tóm tắt kết quả
@@ -73,13 +73,17 @@ Crossref API
 
 | Biến/cấu hình             | Giá trị sử dụng |
 | ---------------------------- | ------------------- |
-| `LLM_PROVIDER`             | [Giá trị]         |
-| `LLM_MODEL`                | [Giá trị]         |
-| Embedding model              | [Giá trị]         |
-| Số lượng Crossref records | [Giá trị]         |
-| Retrieval`top_k`           | [Giá trị]         |
-| Freshness threshold          | [Giá trị]         |
-| Random seed, nếu có        | [Giá trị]         |
+| `LLM_PROVIDER`             | `openai` |
+| `LLM_MODEL`                | `gpt-5` |
+| Embedding model              | `sentence-transformers/all-MiniLM-L6-v2` |
+| Reranker model               | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Vector store/metric          | ChromaDB PersistentClient, HNSW cosine |
+| Collections                  | `papers-baseline`, `papers-corrupted`, `papers-repaired` |
+| Số lượng Crossref records | 24 raw records; 24 clean baseline records |
+| Số câu hỏi evaluation     | 12 câu hỏi trong frozen test set |
+| Retrieval `top_k`           | 4; candidate set reranking tối đa `top_k × 4` |
+| Freshness threshold          | 180 ngày |
+| Random seed, nếu có        | Không sử dụng RNG; corruption chọn record theo quy tắc xác định |
 
 Không dán nội dung API key hoặc file `.env` vào báo cáo.
 
@@ -183,13 +187,13 @@ Giải thích vì sao test set được giữ nguyên khi đánh giá baseline, 
 
 | Artifact                 | Đường dẫn thực tế                | Trạng thái | Ghi chú   |
 | ------------------------ | -------------------------------------- | ------------ | ---------- |
-| Raw response/records     | `data/raw/`                          | [Có/Thiếu] | [Ghi chú] |
-| Cleaned dataset          | `data/clean/`                        | [Có/Thiếu] | [Ghi chú] |
-| Embedding manifest/index | `data/embeddings/`                   | [Có/Thiếu] | [Ghi chú] |
-| Evaluation set           | `data/eval/`                         | [Có/Thiếu] | [Ghi chú] |
-| Baseline metrics         | `data/results/baseline_metrics.json` | [Có/Thiếu] | [Ghi chú] |
-| Quality/freshness        | `data/quality/`                      | [Có/Thiếu] | [Ghi chú] |
-| Baseline report          | `data/reports/phase1_report.md`      | [Có/Thiếu] | [Ghi chú] |
+| Raw response/records     | `data/raw/crossref_response.json`, `data/raw/crossref_records.json` | Có | Có snapshot API gốc và 24 records đã parse để truy vết/repair. |
+| Cleaned dataset          | `data/clean/papers_clean.csv`, `data/clean/papers_clean.json` | Có | 24 records sạch; có `paper_id`, metadata, `age_days` và `text_for_embedding`. |
+| Embedding manifest/index | `data/embeddings/papers_embeddings.json`, `data/chroma/` | Có | Manifest dùng MiniLM; collection Chroma `papers-baseline` lưu 24 documents. |
+| Evaluation set           | `data/eval/test_set.json` | Có | Frozen test set gồm 12 câu hỏi với ground-truth document IDs. |
+| Baseline metrics         | `data/results/baseline_metrics.json` | Có | Có đủ hit rate, token F1, judge accuracy và mean judge score. |
+| Quality/freshness        | `data/quality/baseline_quality_report.json`, `data/quality/freshness_report.json` | Có | Baseline quality PASS, freshness FRESH và 0 stale rows. |
+| Baseline report          | `data/reports/phase1_report.md` | Có | Tổng hợp source count, metrics, quality và freshness từ artifact thực tế. |
 
 ### Baseline metrics
 
