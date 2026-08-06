@@ -15,11 +15,11 @@
 
 | STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
 | --: | --- | --- | --- | --- |
-| 1 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 2 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 3 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 4 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 5 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
+| 1 | Nguyễn Minh Đạt | [MSSV] | Pipeline integrator (lead) | `src/core/` · `src/pipelines/` |
+| 2 | Nguyễn Hùng Mạnh | [MSSV] | Ingestion owner (ingest) | `src/ingestion/crossref.py` · `data/raw/` |
+| 3 | Trần Hoàng Mai Anh | [MSSV] | Cleaning & corruption owner (clean) | `src/ingestion/cleaning.py` · `src/ingestion/corruption.py` |
+| 4 | Nguyễn Hương Trà | [MSSV] | RAG & agent owner (rag) | `src/retrieval/` · `data/embeddings/` |
+| 5 | Hà Anh Tuấn | [MSSV] | Evaluation & observability (eval\|observe) | `src/evaluation/` · `src/observability/` |
 
 ## 2. Tóm tắt kết quả
 
