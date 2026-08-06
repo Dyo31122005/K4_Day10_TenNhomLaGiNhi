@@ -46,6 +46,23 @@ def _token_f1(reference: str, prediction: str) -> float:
 
 
 def _judge_answer(settings: Settings, question: str, reference: str, prediction: str) -> JudgeVerdict:
+    cache_path = settings.paths.project_dir / "data" / "results" / "judge_cache.json"
+    cache = {}
+    if cache_path.exists():
+        try:
+            cache = read_json(cache_path)
+        except Exception:
+            pass
+
+    cache_key = f"{question}|||{reference}|||{prediction}"
+    if cache_key in cache:
+        cached = cache[cache_key]
+        return JudgeVerdict(
+            score=cached["score"],
+            correct=cached["correct"],
+            reasoning=cached.get("reasoning", "Loaded from cache."),
+        )
+
     prompt = f"""
 Evaluate the model answer against the reference answer.
 
@@ -60,14 +77,26 @@ Return:
 """.strip()
     try:
         llm = build_llm(settings=settings, temperature=0.0).with_structured_output(JudgeVerdict)
-        return llm.invoke(prompt)
+        verdict = llm.invoke(prompt)
     except Exception:
         score = 5 if _token_f1(reference, prediction) >= 0.95 else 3 if _token_f1(reference, prediction) >= 0.5 else 1
-        return JudgeVerdict(
+        verdict = JudgeVerdict(
             score=score,
             correct=score >= 3,
             reasoning="Fallback heuristic judge used because the LLM evaluator was unavailable.",
         )
+
+    cache[cache_key] = {
+        "score": verdict.score,
+        "correct": verdict.correct,
+        "reasoning": verdict.reasoning,
+    }
+    try:
+        write_json(cache_path, cache)
+    except Exception:
+        pass
+
+    return verdict
 
 
 def _run_ragas(settings: Settings, answers: list[dict[str, Any]]) -> dict[str, Any]:
