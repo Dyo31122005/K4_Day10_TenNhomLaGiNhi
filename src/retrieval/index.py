@@ -36,6 +36,14 @@ MINIMUM_METADATA_FIELDS = (
 OPTIONAL_METADATA_FIELDS = ("abs_url", "pdf_url")
 
 
+def _clean_scalar_text(value: Any) -> str:
+    """Convert a dataframe scalar to text without leaking pandas NaN markers."""
+
+    if value is None or pd.isna(value):
+        return ""
+    return str(value).strip()
+
+
 @dataclass(frozen=True)
 class IndexConfig:
     """Auditable index configuration prepared before a collection is built."""
@@ -95,22 +103,23 @@ class LocalEmbeddingIndex:
         documents: list[dict[str, Any]] = []
         for index, row in enumerate(records):
             metadata = {
-                field: str(row[field]).strip()
+                field: _clean_scalar_text(row[field])
                 for field in MINIMUM_METADATA_FIELDS
             }
             metadata.update(
                 {
-                    field: str(row[field]).strip()
+                    field: _clean_scalar_text(row[field])
                     for field in OPTIONAL_METADATA_FIELDS
-                    if field in row and pd.notna(row[field]) and str(row[field]).strip()
+                    if field in row and _clean_scalar_text(row[field])
                 }
             )
+            paper_id = _clean_scalar_text(row["paper_id"])
             documents.append(
                 {
-                    "record_id": f"{row['paper_id']}::{index}",
-                    "paper_id": str(row["paper_id"]).strip(),
-                    "title": str(row["title"]).strip(),
-                    "content": str(row["text_for_embedding"]).strip(),
+                    "record_id": f"{paper_id}::{index}",
+                    "paper_id": paper_id,
+                    "title": _clean_scalar_text(row["title"]),
+                    "content": _clean_scalar_text(row["text_for_embedding"]),
                     "metadata": metadata,
                 }
             )

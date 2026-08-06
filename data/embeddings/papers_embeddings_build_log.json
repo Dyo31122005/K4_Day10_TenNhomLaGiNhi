@@ -1,0 +1,62 @@
+{
+  "built_at_utc": "2026-08-06T09:48:16.385395+00:00",
+  "variant": "baseline",
+  "clean_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/clean/papers_clean.csv",
+  "manifest_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/embeddings/papers_embeddings.json",
+  "persist_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/chroma",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "collection_signature": {
+    "collection_name": "papers-baseline",
+    "count": 24,
+    "documents_sha256": "9479689a60d9ea75abaa08bd7c8b73d42a0f727dc425d5346db1d441a5d0bbc3"
+  },
+  "verification": {
+    "collection_name": "papers-baseline",
+    "clean_rows": 24,
+    "manifest_documents": 24,
+    "collection_documents": 24,
+    "paper_ids_match": true,
+    "contents_match": true,
+    "embedding_model_match": true,
+    "reranker_model_match": true,
+    "passed": true
+  },
+  "smoke_result": {
+    "query": "Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents",
+    "expected_paper_id": "10.1111/exsy.70341",
+    "search_paper_ids": [
+      "10.1111/exsy.70341",
+      "10.36227/techrxiv.177272838.89432844/v1",
+      "10.55041/isjem07213",
+      "10.20944/preprints202604.0339.v1"
+    ],
+    "search_titles": [
+      "Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents",
+      "A Survey of (Deep RAG) Deep Retrieval Augmented Generation and Reasoning in Large Language Models",
+      "Speculative Retrieval-Augmented Generation for Cost-Efficient Large Language Model Inference",
+      "Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation"
+    ],
+    "search_scores": [
+      0.999965,
+      0.993171,
+      0.988288,
+      0.985381
+    ],
+    "vector_scores": [
+      0.737474,
+      0.637047,
+      0.576218,
+      0.603015
+    ],
+    "rerank_logits": [
+      10.258579,
+      4.979706,
+      4.435386,
+      4.210739
+    ],
+    "lookup_paper_id": "10.1111/exsy.70341",
+    "search_hit": true,
+    "lookup_hit": true
+  }
+}
