@@ -6,7 +6,7 @@ from pathlib import Path
 import pandas as pd
 
 from core.utils import write_json
-from ingestion.cleaning import CLEAN_SCHEMA_COLUMNS, build_text_for_embedding
+from ingestion.cleaning import CLEAN_SCHEMA_COLUMNS, build_text_for_embedding, validate_clean_dataframe
 
 
 def _rebuild_derived_fields(df: pd.DataFrame) -> pd.DataFrame:
@@ -33,6 +33,9 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path) -> pd.DataF
     missing = [column for column in CLEAN_SCHEMA_COLUMNS if column not in df.columns]
     if missing:
         raise ValueError(f"Cannot corrupt dataframe missing clean-schema columns: {missing}")
+    # Corruption starts from a real clean-contract artifact; otherwise a
+    # downstream quality failure could be mistaken for a simulated defect.
+    validate_clean_dataframe(df)
     if df.empty:
         write_json(output_log_path, {"input_rows": 0, "output_rows": 0, "operations": []})
         return df.copy()
