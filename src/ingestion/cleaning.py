@@ -10,7 +10,7 @@ import unicodedata
 
 import pandas as pd
 
-from core.utils import compact_join, normalize_whitespace, write_csv, write_json
+from core.utils import compact_join, normalize_whitespace, now_utc, write_csv, write_json
 from ingestion.crossref import PaperRecord
 
 
@@ -36,6 +36,7 @@ CLEAN_SCHEMA_COLUMNS = [
 ]
 
 RAW_REQUIRED_FIELDS = {"paper_id", "title", "summary", "published"}
+MIN_SUMMARY_CHARS = 100
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _SPACE_BEFORE_PUNCTUATION_RE = re.compile(r"\s+([,.;:!?%\]\)])")
 _SPACE_AFTER_OPENING_PUNCTUATION_RE = re.compile(r"([\[(])\s+")
@@ -114,18 +115,14 @@ def _parse_iso_date(value: object) -> str:
 
 
 def build_text_for_embedding(row: dict[str, Any]) -> str:
-    """Build the retrieval text from searchable paper content and useful context."""
-    parts = [
-        f"Title: {row['title']}",
-        f"Summary: {row['summary']}",
-    ]
-    if row["authors_joined"]:
-        parts.append(f"Authors: {row['authors_joined']}")
-    if row["categories_joined"]:
-        parts.append(f"Categories: {row['categories_joined']}")
-    if row["comment"]:
-        parts.append(f"Source: {row['comment']}")
-    return "\n".join(parts)
+    """Build the mandatory semantic representation used by the embedding index."""
+    return " | ".join(
+        (
+            f"Title: {row['title']}",
+            f"Authors: {row['authors_joined']}",
+            f"Summary: {row['summary']}",
+        )
+    )
 
 
 def validate_clean_dataframe(df: pd.DataFrame) -> dict[str, Any]:
@@ -143,11 +140,13 @@ def validate_clean_dataframe(df: pd.DataFrame) -> dict[str, Any]:
     }
     duplicate_paper_ids = int(df["paper_id"].duplicated().sum())
     invalid_dates = int(pd.to_datetime(df["published"], errors="coerce").isna().sum())
+    short_summaries = int((df["summary"].fillna("").astype(str).str.len() < MIN_SUMMARY_CHARS).sum())
     empty_embedding_text = int((df["text_for_embedding"].astype(str).str.strip() == "").sum())
     failures = {
         "null_required": {key: value for key, value in null_required.items() if value},
         "duplicate_paper_ids": duplicate_paper_ids,
         "invalid_published_dates": invalid_dates,
+        "summary_below_minimum_length": short_summaries,
         "empty_embedding_text": empty_embedding_text,
     }
     if any(failures.values()):
@@ -162,8 +161,8 @@ def validate_raw_to_clean(records: list[PaperRecord], run_date: datetime) -> dic
 
 def write_clean_artifacts(
     df: pd.DataFrame,
-    clean_csv_path: Path,
-    clean_json_path: Path,
+    clean_csv_path: Path | None = None,
+    clean_json_path: Path | None = None,
     audit_log_path: Path | None = None,
 ) -> dict[str, Any]:
     """Persist the clean-data contract and its raw-to-clean reconciliation log.
@@ -173,6 +172,10 @@ def write_clean_artifacts(
     written to disk.  Callers that construct a frame independently still get a
     useful output-row count.
     """
+    default_clean_dir = Path(__file__).resolve().parents[2] / "data" / "clean"
+    clean_csv_path = clean_csv_path or default_clean_dir / "papers_clean.csv"
+    clean_json_path = clean_json_path or default_clean_dir / "papers_clean.json"
+
     validate_clean_dataframe(df)
     write_csv(df, clean_csv_path)
     write_json(clean_json_path, df.to_dict(orient="records"))
@@ -185,21 +188,23 @@ def write_clean_artifacts(
     return audit
 
 
-def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.DataFrame:
+def build_clean_dataframe(records: list[PaperRecord], run_date: datetime | None = None) -> pd.DataFrame:
     """Normalize raw records into the stable schema consumed by all downstream stages.
 
-    Rows without a paper id, title, summary, or parseable published date are
-    dropped. Duplicate paper ids keep the first raw occurrence. ``updated``
-    falls back to ``published``; optional author/category lists become empty
-    lists and their joined fields become empty strings.
+    Rows without a paper id, title, a summary of at least 100 characters, or a
+    parseable published date are dropped. Duplicate paper ids keep the first
+    raw occurrence. ``updated`` falls back to ``published``; optional
+    author/category lists become empty lists and their joined fields become
+    empty strings.  ``age_days`` is measured against ``run_date`` (or now).
     """
-    run_day: date = run_date.date()
+    run_day: date = (run_date or now_utc()).date()
     rows: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
     filter_counts = {
         "missing_paper_id": 0,
         "missing_title": 0,
         "missing_summary": 0,
+        "summary_below_minimum_length": 0,
         "invalid_published": 0,
         "duplicate_paper_id": 0,
     }
@@ -221,6 +226,9 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
             continue
         if not summary:
             filter_counts["missing_summary"] += 1
+            continue
+        if len(summary) < MIN_SUMMARY_CHARS:
+            filter_counts["summary_below_minimum_length"] += 1
             continue
         if not published:
             filter_counts["invalid_published"] += 1
@@ -275,4 +283,11 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
         "filtered_or_deduplicated_rows": sum(filter_counts.values()),
         "counts_by_reason": filter_counts,
     }
+    return df
+
+
+def build_and_save_clean_dataframe(records: list[PaperRecord], run_date: datetime | None = None) -> pd.DataFrame:
+    """Clean records and persist the standard artifacts in ``data/clean``."""
+    df = build_clean_dataframe(records, run_date)
+    write_clean_artifacts(df)
     return df
