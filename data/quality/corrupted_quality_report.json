@@ -1,12 +1,12 @@
 {
   "report_name": "corrupted_quality_report.json",
-  "timestamp": "2026-08-06T09:15:21.594996+00:00",
-  "total_rows": 24,
+  "timestamp": "2026-08-06T10:02:19.429750+00:00",
+  "total_rows": 25,
   "is_valid": false,
   "checks": {
     "row_count": {
       "status": "PASS",
-      "details": "Expected >= 20 rows, got 24"
+      "details": "Expected >= 20 rows, got 25"
     },
     "paper_id_not_null": {
       "status": "PASS",
@@ -26,7 +26,7 @@
     },
     "freshness": {
       "status": "FAIL",
-      "details": "Found 1 stale rows older than 180 days"
+      "details": "Found 2 stale rows older than 180 days"
     }
   }
 }

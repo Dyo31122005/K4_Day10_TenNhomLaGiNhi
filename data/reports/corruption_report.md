@@ -13,11 +13,11 @@ This report demonstrates the impact of data quality issues (corruption) on the p
 
 | Metric | Baseline (Clean) | Corrupted (Lỗi) | Repaired (Đã Sửa) | Delta (Corrupted vs Baseline) |
 | :--- | :---: | :---: | :---: | :---: |
-| **Retrieval Hit Rate** | 100.0% | 33.3% | 100.0% | -66.7% |
-| **Mean Token F1-score** | 1.0000 | 0.4600 | 1.0000 | -0.5400 |
-| **LLM Judge Accuracy** | 100.0% | 41.7% | 100.0% | -58.3% |
-| **Mean Judge Score (1-5)** | 5.00 | 3.08 | 5.00 | -1.9167 |
-| **Total Rows** | 24 | 23 | 24 | -1 |
+| **Retrieval Hit Rate** | 100.0% | 66.7% | 100.0% | -33.3% |
+| **Mean Token F1-score** | 1.0000 | 0.3495 | 1.0000 | -0.6505 |
+| **LLM Judge Accuracy** | 100.0% | 33.3% | 100.0% | -66.7% |
+| **Mean Judge Score (1-5)** | 5.00 | 2.67 | 5.00 | -2.3333 |
+| **Total Rows** | 24 | 25 | 24 | 1 |
 | **Quality Status** | PASS | FAIL | PASS | - |
 | **Freshness Status** | FRESH | STALE | FRESH | - |
 
@@ -30,7 +30,12 @@ This report demonstrates the impact of data quality issues (corruption) on the p
 3. **Summary Noise**: Injects unrelated tokens into the summary, degrading generation quality and lowering token F1 / judge scores.
 4. **Title Truncation**: Shortens the title so exact-match/dense retrieval can fail or surface irrelevant papers, reducing retrieval hit rate.
 5. **Stale Publication Date**: Pushes the published date far into the past, violating the freshness threshold and flipping freshness status to STALE.
-6. **Duplicate Record**: Re-inserts an existing paper as a second row, risking duplicate/conflicting evidence being retrieved for the same paper_id.
+6. **Category Swap**: Exchanges category labels between two otherwise valid papers. The schema remains valid, but category retrieval and answers become incorrect.
+7. **Author Attribution Swap**: Exchanges author lists between two papers, simulating a bad multi-source merge while leaving titles and summaries plausible.
+8. **HTML Markup Leakage**: Leaves raw markup in a summary, adding source artifacts to embedding input without breaking the dataframe schema.
+9. **Future Publication Date**: Moves a publication date into the future and makes its persisted age negative, exposing missing temporal-range validation.
+10. **Duplicate Record**: Re-inserts an existing paper as a second row, risking duplicate/conflicting evidence being retrieved for the same paper_id.
+11. **Semantic Near Duplicate**: Adds a lightly reworded copy with a distinct ID, testing whether retrieval is diluted by duplicates that evade exact-match checks.
 
 ---
 

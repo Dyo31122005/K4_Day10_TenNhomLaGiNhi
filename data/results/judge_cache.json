@@ -173,5 +173,30 @@
     "score": 2,
     "correct": false,
     "reasoning": "The model answer does not provide a summary of the paper as requested. It lacks key details about the framework, its development, and validation, which are essential for a comprehensive summary."
+  },
+  "Provide a summary of the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'|||Summary In high-risk industrial settings, leveraging large language models (LLMs) for automated accident analysis and generating safety reports has emerged as an efficient workflow.|||": {
+    "score": 3,
+    "correct": false,
+    "reasoning": "The model answer provides a general idea about the use of large language models in safety report generation but lacks specific details about the multistage retrieval-augmented framework and its application in the oil and gas industry, which are key aspects of the reference answer."
+  },
+  "Who authored the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'?|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li|||Soroush Baseri Saadi, Jonas Ver Berne, Rocharles Cavalcante Fontenele, Peter Claes, Reinhilde Jacobs": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer lists authors who are not associated with the paper, while the reference answer provides the correct authors. Therefore, the model answer is materially incorrect."
+  },
+  "When was the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation' published?|||2026-08-01|||2024-08-01": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer provides a date that is incorrect compared to the reference answer, which states the publication date as 2026-08-01."
+  },
+  "Who authored the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'?|||Soroush Baseri Saadi, Jonas Ver Berne, Rocharles Cavalcante Fontenele, Peter Claes, Reinhilde Jacobs|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer lists authors who are not mentioned in the reference answer, indicating a complete mismatch."
+  },
+  "When was the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study' published?|||2026-07-13|||2027-07-13": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer states the publication date as 2027-07-13, which is incorrect. The reference answer correctly states the date as 2026-07-13."
   }
 }
