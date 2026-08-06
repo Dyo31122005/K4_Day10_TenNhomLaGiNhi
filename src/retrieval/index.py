@@ -12,6 +12,50 @@ from core.utils import read_json, safe_slug, write_json
 from retrieval.embeddings import MiniLMEmbeddings
 
 
+REQUIRED_CLEAN_COLUMNS = (
+    "paper_id",
+    "title",
+    "text_for_embedding",
+    "published",
+    "authors_joined",
+    "categories_joined",
+    "summary",
+)
+
+# These fields are enough for exact lookup, citations, and the deterministic QA
+# helpers. URLs are kept when available, but are not required by the index.
+MINIMUM_METADATA_FIELDS = (
+    "paper_id",
+    "title",
+    "published",
+    "authors_joined",
+    "categories_joined",
+    "summary",
+)
+OPTIONAL_METADATA_FIELDS = ("abs_url", "pdf_url")
+
+
+@dataclass(frozen=True)
+class IndexConfig:
+    """Auditable index configuration prepared before a collection is built."""
+
+    clean_path: Path
+    persist_path: Path
+    collection_name: str
+    embedding_model: str
+    distance_metric: str = "cosine"
+    metadata_fields: tuple[str, ...] = MINIMUM_METADATA_FIELDS
+
+
+@dataclass(frozen=True)
+class SmokeCheck:
+    """A reproducible search/lookup case derived from one clean record."""
+
+    semantic_query: str
+    lookup_value: str
+    expected_paper_id: str
+
+
 @dataclass(frozen=True)
 class SearchResult:
     paper_id: str
@@ -41,26 +85,29 @@ class LocalEmbeddingIndex:
         self.documents_by_title = {document["title"].lower(): document for document in documents}
 
     @staticmethod
-    def _build_documents(df: pd.DataFrame) -> list[dict[str, Any]]:
+    def _build_documents(df: pd.DataFrame, strict_validation: bool = True) -> list[dict[str, Any]]:
+        validate_clean_dataframe(df, strict_content=strict_validation)
         records = df.to_dict(orient="records")
         documents: list[dict[str, Any]] = []
         for index, row in enumerate(records):
+            metadata = {
+                field: str(row[field]).strip()
+                for field in MINIMUM_METADATA_FIELDS
+            }
+            metadata.update(
+                {
+                    field: str(row[field]).strip()
+                    for field in OPTIONAL_METADATA_FIELDS
+                    if field in row and pd.notna(row[field]) and str(row[field]).strip()
+                }
+            )
             documents.append(
                 {
                     "record_id": f"{row['paper_id']}::{index}",
-                    "paper_id": row["paper_id"],
-                    "title": row["title"],
-                    "content": row["text_for_embedding"],
-                    "metadata": {
-                        "paper_id": row["paper_id"],
-                        "title": row["title"],
-                        "published": row["published"],
-                        "authors_joined": row["authors_joined"],
-                        "categories_joined": row["categories_joined"],
-                        "summary": row["summary"],
-                        "abs_url": row["abs_url"],
-                        "pdf_url": row["pdf_url"],
-                    },
+                    "paper_id": str(row["paper_id"]).strip(),
+                    "title": str(row["title"]).strip(),
+                    "content": str(row["text_for_embedding"]).strip(),
+                    "metadata": metadata,
                 }
             )
         return documents
@@ -86,18 +133,20 @@ class LocalEmbeddingIndex:
         df: pd.DataFrame,
         settings: Settings,
         embeddings_output_path: Path | None = None,
+        strict_validation: bool | None = None,
     ) -> "LocalEmbeddingIndex":
         collection_name = cls._derive_collection_name(settings, embeddings_output_path)
-        documents = cls._build_documents(df)
+        if strict_validation is None:
+            strict_validation = collection_name != settings.corrupted_collection_name
+        documents = cls._build_documents(df, strict_validation=strict_validation)
         persist_path = settings.paths.chroma_dir
         persist_path.mkdir(parents=True, exist_ok=True)
 
         embedding_model = MiniLMEmbeddings(settings.embedding_model)
         client = chromadb.PersistentClient(path=str(persist_path))
-        try:
+        existing_collections = {item.name for item in client.list_collections()}
+        if collection_name in existing_collections:
             client.delete_collection(name=collection_name)
-        except Exception:
-            pass
         collection = client.create_collection(
             name=collection_name,
             configuration={"hnsw": {"space": "cosine"}},
@@ -172,3 +221,98 @@ class LocalEmbeddingIndex:
         if needle in self.documents_by_title:
             return self.documents_by_title[needle]
         return None
+
+
+def prepare_index_config(
+    settings: Settings,
+    clean_path: Path | None = None,
+    embeddings_output_path: Path | None = None,
+) -> IndexConfig:
+    """Prepare the baseline/corrupted/repaired index inputs without building it."""
+
+    source_path = (clean_path or settings.paths.clean_csv).resolve()
+    return IndexConfig(
+        clean_path=source_path,
+        persist_path=settings.paths.chroma_dir.resolve(),
+        collection_name=LocalEmbeddingIndex._derive_collection_name(settings, embeddings_output_path),
+        embedding_model=settings.embedding_model,
+    )
+
+
+def load_clean_dataframe(clean_path: Path, strict_content: bool = True) -> pd.DataFrame:
+    """Read a clean CSV/JSON artifact and enforce the retrieval schema contract."""
+
+    if not clean_path.exists():
+        raise FileNotFoundError(f"Clean dataset is not available yet: {clean_path}")
+    suffix = clean_path.suffix.lower()
+    if suffix == ".csv":
+        df = pd.read_csv(clean_path)
+    elif suffix == ".json":
+        df = pd.read_json(clean_path)
+    else:
+        raise ValueError(f"Unsupported clean dataset format: {clean_path.suffix}")
+    validate_clean_dataframe(df, strict_content=strict_content)
+    return df
+
+
+def validate_clean_dataframe(df: pd.DataFrame, strict_content: bool = True) -> None:
+    """Fail early when cleaned data cannot safely be embedded or looked up."""
+
+    missing = [column for column in REQUIRED_CLEAN_COLUMNS if column not in df.columns]
+    if missing:
+        raise ValueError(f"Clean dataframe is missing retrieval columns: {', '.join(missing)}")
+    if df.empty:
+        raise ValueError("Clean dataframe has no records to index.")
+
+    for column in ("paper_id", "title"):
+        values = df[column].fillna("").astype(str).str.strip()
+        if values.eq("").any():
+            bad_rows = values.index[values.eq("")].tolist()[:5]
+            raise ValueError(f"Column {column!r} is blank at rows: {bad_rows}")
+
+    if not strict_content:
+        return
+
+    for column in ("text_for_embedding", "summary"):
+        values = df[column].fillna("").astype(str).str.strip()
+        if values.eq("").any():
+            bad_rows = values.index[values.eq("")].tolist()[:5]
+            raise ValueError(f"Column {column!r} is blank at rows: {bad_rows}")
+
+    normalized_ids = df["paper_id"].astype(str).str.strip().str.lower()
+    if normalized_ids.duplicated().any():
+        duplicates = normalized_ids[normalized_ids.duplicated(keep=False)].unique().tolist()[:5]
+        raise ValueError(f"paper_id must be unique; duplicates: {duplicates}")
+
+    embedding_texts = df["text_for_embedding"].astype(str).str.strip()
+    normalized_texts = embedding_texts.str.replace(r"\s+", " ", regex=True).str.casefold()
+    if normalized_texts.duplicated().any():
+        duplicate_rows = normalized_texts.index[normalized_texts.duplicated(keep=False)].tolist()[:5]
+        raise ValueError(f"text_for_embedding is duplicated at rows: {duplicate_rows}")
+
+    for row_index in df.index:
+        normalized_text = normalized_texts.loc[row_index]
+        for source_column in ("title", "summary"):
+            expected = " ".join(str(df.at[row_index, source_column]).split()).casefold()
+            if expected not in normalized_text:
+                raise ValueError(
+                    f"text_for_embedding at row {row_index} does not contain {source_column}."
+                )
+
+
+def prepare_smoke_checks(df: pd.DataFrame, limit: int = 3) -> list[SmokeCheck]:
+    """Create deterministic post-index search and exact-lookup checks from clean data."""
+
+    validate_clean_dataframe(df)
+    if limit < 1:
+        raise ValueError("Smoke-check limit must be at least 1.")
+    checks: list[SmokeCheck] = []
+    for row in df.head(limit).to_dict(orient="records"):
+        checks.append(
+            SmokeCheck(
+                semantic_query=str(row["title"]).strip(),
+                lookup_value=str(row["paper_id"]).strip(),
+                expected_paper_id=str(row["paper_id"]).strip(),
+            )
+        )
+    return checks
