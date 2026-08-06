@@ -118,5 +118,25 @@
     "score": 5,
     "correct": true,
     "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key points of the paper's abstract."
+  },
+  "Who authored the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?|||Wei Tian, Yuhao Zhou|||Wei Tian, Yuhao Zhou": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the authors of the paper as Wei Tian and Yuhao Zhou, matching the reference answer exactly."
+  },
+  "When was the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?|||2026-08-01|||2026-08-01": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
   }
 }

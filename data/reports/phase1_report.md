@@ -6,7 +6,7 @@
 - **Cleaned Records**: 24
 
 ## 2. Evaluation Metrics
-- **Samples**: 24
+- **Samples**: 12
 - **Retrieval Hit Rate**: 100.0%
 - **Mean Token F1**: 1.0000
 - **Judge Accuracy**: 100.0%

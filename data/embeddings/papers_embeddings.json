@@ -1,6 +1,8 @@
 {
   "backend": "chroma",
   "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "retrieval_strategy": "chroma-cosine-candidates-then-cross-encoder-rerank",
   "persist_path": "H:\\Lab_day10\\K4_Day10_TenNhomLaGiNhi\\data\\chroma",
   "collection_name": "papers-baseline",
   "documents": [
