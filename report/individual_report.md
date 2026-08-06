@@ -4,10 +4,10 @@
 
 | Thông tin | Nội dung |
 |---|---|
-| Họ và tên | Nguyễn Hương Trà |
-| MSSV | Chưa cung cấp |
+| Họ và tên | Nguyễn Thị Hương Trà |
+| MSSV | 2A202601416 |
 | Khóa/Lớp | K4 |
-| Tên nhóm | Tên Nhóm Là Gì Nhỉ |
+| Tên nhóm | TenNhomLaGiNhi |
 | Vai trò chính | RAG & agent owner |
 | Repository | `https://github.com/Dyo31122005/K4_Day10_TenNhomLaGiNhi` |
 | Nhánh thực hiện | `tea` |
@@ -32,7 +32,6 @@
 
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 |---|---|---|
-| Tích hợp main vào nhánh `tea` | Nhóm tích hợp | Rebase lên main mới, xử lý add/add conflict ở SQLite/manifests và cập nhật `origin/tea` an toàn bằng `--force-with-lease`. |
 | Kiểm tra popup nguồn trên corrupted data | Backend/frontend | Phát hiện Pandas `NaN` bị ép thành chuỗi `"nan"`; sửa retrieval metadata thành chuỗi rỗng và xác minh không còn marker giả. |
 | Chuẩn bị bằng chứng CP5–CP6 | Evaluation/observability và nhóm báo cáo | Sinh build logs, agent audit và báo cáo so sánh collection từ workflow chuyên dụng. |
 
@@ -157,6 +156,6 @@ Tôi sẽ thêm evaluation riêng cho lợi ích của reranker: chạy cùng fr
 - [x] Báo cáo không chứa `.env`, API key, token hoặc secret.
 - [x] Báo cáo này không phải bản sao nguyên văn của báo cáo nhóm hoặc báo cáo thành viên khác.
 
-**Họ và tên:** Nguyễn Hương Trà
+**Họ và tên:** Nguyễn Thị Hương Trà
 
 **Ngày xác nhận:** 2026-08-06
