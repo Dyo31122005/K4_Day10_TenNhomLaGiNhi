@@ -14,7 +14,7 @@
 | STT | Họ và tên          | MSSV         | Vai trò chính                              | Module/deliverable sở hữu                                   |
 | --: | ------------------ | ------------ | ------------------------------------------ | ----------------------------------------------------------- |
 |   1 | Nguyễn Minh Đạt    | 2A202601142  | Pipeline integrator (lead)                 | `src/core/` · `src/pipelines/`                              |
-|   2 | Nguyễn Hùng Mạnh   | 2A2026001256 | Ingestion owner (ingest)                   | `src/ingestion/crossref.py` · `data/raw/`                   |
+|   2 | Nguyễn Hùng Mạnh   | 2A202601256 | Ingestion owner (ingest)                   | `src/ingestion/crossref.py` · `data/raw/`                   |
 |   3 | Trần Hoàng Mai Anh | 2A202601324  | Cleaning & corruption owner (clean)        | `src/ingestion/cleaning.py` · `src/ingestion/corruption.py` |
 |   4 | Nguyễn Hương Trà   | 2A202601416  | RAG & agent owner (rag)                    | `src/retrieval/` · `data/embeddings/`                       |
 |   5 | Hà Anh Tuấn        | 2A202601582  | Evaluation & observability (eval\|observe) | `src/evaluation/` · `src/observability/`                    |
