@@ -12,9 +12,15 @@ frontend/node_modules/
 frontend/.next/
 frontend/next-env.d.ts
 frontend/.env.local
+frontend/*.tsbuildinfo
 
 # backend
 backend/__pycache__/
+
+# OS/editor junk
+.DS_Store
+Thumbs.db
+*.log
 
 # reference-only UI template (Figma Make export, not part of the lab deliverable)
 Premium AI Chatbot Web App/
