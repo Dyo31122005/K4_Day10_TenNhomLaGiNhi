@@ -6,6 +6,10 @@ import pandas as pd
 
 from core.utils import first_sentence, write_json
 
+# Below this many cleaned papers, the test set would not cover enough
+# distinct ground truths to be a meaningful evaluation signal.
+MIN_DOCUMENTS = 3
+
 
 def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
     """Build evaluation set from cleaned dataframe.
@@ -22,6 +26,11 @@ def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
     """
     if df.empty:
         raise ValueError("Cannot build test set from an empty DataFrame.")
+    if len(df) < MIN_DOCUMENTS:
+        raise ValueError(
+            f"Cannot build a meaningful test set from only {len(df)} document(s); "
+            f"need at least {MIN_DOCUMENTS}."
+        )
 
     # We select up to 3 papers to generate 12 evaluation questions
     selected_df = df.head(3)

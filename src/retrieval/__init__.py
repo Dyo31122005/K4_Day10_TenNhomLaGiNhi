@@ -1,5 +1,68 @@
-from .agent import build_agent, run_agent_question
+from .agent import (
+    AgentRunAudit,
+    build_agent,
+    build_agent_tools,
+    run_agent_question,
+    run_agent_question_audited,
+    validate_agent_audit,
+)
 from .embeddings import MiniLMEmbeddings
-from .index import LocalEmbeddingIndex, SearchResult
+from .index import (
+    IndexConfig,
+    LocalEmbeddingIndex,
+    SearchResult,
+    SmokeCheck,
+    load_clean_dataframe,
+    prepare_index_config,
+    prepare_smoke_checks,
+    validate_clean_dataframe,
+)
 from .llm import build_llm
 from .qa import AnswerResult, answer_question
+from .workflow import (
+    IndexArtifacts,
+    IndexVerification,
+    SmokeResult,
+    audit_baseline_and_repaired_agents,
+    build_and_verify_index,
+    build_verify_all_indexes,
+    collection_signature,
+    resolve_index_artifacts,
+    run_agent_smoke,
+    run_smoke_check,
+    verify_index_manifest,
+    write_retrieval_report,
+)
+
+__all__ = [
+    "AnswerResult",
+    "AgentRunAudit",
+    "IndexArtifacts",
+    "IndexConfig",
+    "IndexVerification",
+    "LocalEmbeddingIndex",
+    "MiniLMEmbeddings",
+    "SearchResult",
+    "SmokeCheck",
+    "SmokeResult",
+    "audit_baseline_and_repaired_agents",
+    "answer_question",
+    "build_agent",
+    "build_agent_tools",
+    "build_and_verify_index",
+    "build_llm",
+    "build_verify_all_indexes",
+    "collection_signature",
+    "load_clean_dataframe",
+    "prepare_index_config",
+    "prepare_smoke_checks",
+    "resolve_index_artifacts",
+    "run_agent_smoke",
+    "run_agent_question",
+    "run_agent_question_audited",
+    "run_smoke_check",
+    "validate_agent_audit",
+    "validate_clean_dataframe",
+    "verify_index_manifest",
+    "write_retrieval_report",
+]

@@ -105,6 +105,7 @@ def main() -> None:
 
     # 11. Generate comparison report
     print(f"Generating comparison report at {settings.paths.comparison_report}...")
+    corruption_log = read_json(settings.paths.corruption_log)
     generate_corruption_report(
         settings.paths.comparison_report,
         baseline_metrics=baseline_metrics,
@@ -114,6 +115,7 @@ def main() -> None:
         repaired_quality=repaired_quality,
         corrupted_freshness=corrupted_freshness,
         repaired_freshness=repaired_freshness,
+        corruption_log=corruption_log,
     )
 
     print("=== Corruption and Comparison Flow Completed successfully! ===")
