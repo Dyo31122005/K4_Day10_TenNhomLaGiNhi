@@ -6,10 +6,10 @@
 
 | Thông tin         | Nội dung                  |
 | ------------------ | -------------------------- |
-| Khóa/Lớp         | [K3 hoặc K4]              |
-| Tên nhóm         | [Tên hoặc mã nhóm]     |
-| Repository         | [Đường dẫn repository] |
-| Ngày hoàn thành | [YYYY-MM-DD]               |
+| Khóa/Lớp         | K4             |
+| Tên nhóm         | TenNhomLaGiNhi     |
+| Repository         | https://github.com/Dyo31122005/K4_Day10_TenNhomLaGiNhi |
+| Ngày hoàn thành | 2026-08-06              |
 
 ### Thành viên và phân công
 
@@ -26,6 +26,7 @@
 Viết từ 150–250 từ, trả lời ngắn gọn:
 
 - Nhóm đã hoàn thành những phần nào?
+
 - Baseline pipeline đã tạo ra các artifact nào?
 - Corruption nào ảnh hưởng rõ nhất đến data quality hoặc agent?
 - Repair đã phục hồi được chỉ số nào?
@@ -33,7 +34,7 @@ Viết từ 150–250 từ, trả lời ngắn gọn:
 
 **Tóm tắt của nhóm:**
 
-[Viết phần tóm tắt tại đây.]
+Nhóm đã hoàn thành toàn bộ pipeline end-to-end từ ingestion, cleaning, embedding, đến evaluation và observability. Baseline pipeline tạo ra các artifact chính: raw records từ Crossref API, cleaned dataset, embedding index trên ChromaDB, evaluation metrics, và quality/freshness reports. Corruption chính ảnh hưởng rõ nhất là missing embedding vectors và stale document timestamps, làm giảm retrieval_hit_rate và answer quality đáng kể. Repair process đã phục hồi documents từ nguồn Crossref, khôi phục được embedding vectors và timestamp hợp lệ, với mục tiêu khôi phục các metrics gần về baseline. Blocker chính là API rate limiting và hiệu suất embedding indexing trên dataset lớn; giới hạn khác là khó khăn trong việc tạo ground-truth relevance labels hoàn toàn chính xác cho evaluation set.
 
 ## 3. Kiến trúc và luồng dữ liệu
 
