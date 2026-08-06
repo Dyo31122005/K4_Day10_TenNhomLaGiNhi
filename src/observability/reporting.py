@@ -35,6 +35,26 @@ _CORRUPTION_EXPLANATIONS: dict[str, str] = {
         "**Duplicate Record**: Re-inserts an existing paper as a second row, "
         "risking duplicate/conflicting evidence being retrieved for the same paper_id."
     ),
+    "swap_categories": (
+        "**Category Swap**: Exchanges category labels between two otherwise valid papers. "
+        "The schema remains valid, but category retrieval and answers become incorrect."
+    ),
+    "swap_authors": (
+        "**Author Attribution Swap**: Exchanges author lists between two papers, simulating "
+        "a bad multi-source merge while leaving titles and summaries plausible."
+    ),
+    "html_markup_leakage": (
+        "**HTML Markup Leakage**: Leaves raw markup in a summary, adding source artifacts "
+        "to embedding input without breaking the dataframe schema."
+    ),
+    "make_published_future": (
+        "**Future Publication Date**: Moves a publication date into the future and makes "
+        "its persisted age negative, exposing missing temporal-range validation."
+    ),
+    "semantic_near_duplicate": (
+        "**Semantic Near Duplicate**: Adds a lightly reworded copy with a distinct ID, "
+        "testing whether retrieval is diluted by duplicates that evade exact-match checks."
+    ),
 }
 
 
