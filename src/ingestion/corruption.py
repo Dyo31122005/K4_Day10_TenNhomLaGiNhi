@@ -63,6 +63,13 @@ def corrupt_clean_dataframe(df: pd.DataFrame, output_log_path: Path) -> pd.DataF
         stale_day = pd.to_datetime(corrupted.loc[3, "published"], errors="coerce")
         if not pd.isna(stale_day):
             corrupted.loc[3, "published"] = (stale_day.date() - timedelta(days=730)).isoformat()
+            # Preserve the baseline run-date reference used during cleaning:
+            # moving published back 730 days must also make freshness 730 days
+            # older, otherwise a stale-date corruption is invisible to checks
+            # that use the persisted ``age_days`` field.
+            current_age = pd.to_numeric(corrupted.loc[3, "age_days"], errors="coerce")
+            if not pd.isna(current_age):
+                corrupted.loc[3, "age_days"] = int(current_age) + 730
             operations.append({"type": "make_published_stale", "paper_id": corrupted.loc[3, "paper_id"]})
 
     if not corrupted.empty:

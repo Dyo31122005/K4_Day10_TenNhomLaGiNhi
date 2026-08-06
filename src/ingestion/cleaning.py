@@ -3,12 +3,14 @@ from __future__ import annotations
 from collections.abc import Iterable
 from datetime import date, datetime
 import html
+from pathlib import Path
 import re
 from typing import Any
+import unicodedata
 
 import pandas as pd
 
-from core.utils import compact_join, normalize_whitespace
+from core.utils import compact_join, normalize_whitespace, write_csv, write_json
 from ingestion.crossref import PaperRecord
 
 
@@ -35,24 +37,47 @@ CLEAN_SCHEMA_COLUMNS = [
 
 RAW_REQUIRED_FIELDS = {"paper_id", "title", "summary", "published"}
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
+_SPACE_BEFORE_PUNCTUATION_RE = re.compile(r"\s+([,.;:!?%\]\)])")
+_SPACE_AFTER_OPENING_PUNCTUATION_RE = re.compile(r"([\[(])\s+")
+_DASH_RE = re.compile(r"[\u2010-\u2015\u2212]")
+_SPACE_AFTER_WORD_HYPHEN_RE = re.compile(r"(?<=\w)-\s+(?=\w)")
 
 
 def _clean_text(value: object) -> str:
     """Strip lightweight Crossref/JATS markup and normalize whitespace."""
-    if value is None or pd.isna(value):
+    if value is None or isinstance(value, (list, tuple, set, dict)):
         return ""
-    text = html.unescape(str(value))
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        return ""
+    text = unicodedata.normalize("NFKC", html.unescape(str(value)))
     text = _HTML_TAG_RE.sub(" ", text)
-    return normalize_whitespace(text)
+    return _SPACE_BEFORE_PUNCTUATION_RE.sub(r"\1", normalize_whitespace(text))
+
+
+def _clean_title(value: object) -> str:
+    """Normalize display-title typography without changing its wording."""
+    title = _clean_text(value)
+    title = _DASH_RE.sub("-", title)
+    title = _SPACE_AFTER_WORD_HYPHEN_RE.sub("-", title)
+    title = _SPACE_BEFORE_PUNCTUATION_RE.sub(r"\1", title)
+    return _SPACE_AFTER_OPENING_PUNCTUATION_RE.sub(r"\1", title).strip()
 
 
 def _clean_string_list(value: object) -> list[str]:
     """Return an ordered, de-duplicated list of normalized non-empty strings."""
-    if value is None or (not isinstance(value, Iterable)) or isinstance(value, (str, bytes, dict)):
+    if value is None:
+        return []
+    # A few metadata providers emit one author/category as a scalar. Treat it
+    # as a one-item list instead of silently discarding valid metadata.
+    values = [value] if isinstance(value, (str, bytes)) else value
+    if not isinstance(values, Iterable) or isinstance(values, dict):
         return []
     cleaned: list[str] = []
     seen: set[str] = set()
-    for item in value:
+    for item in values:
         normalized = _clean_text(item)
         key = normalized.casefold()
         if normalized and key not in seen:
@@ -63,9 +88,26 @@ def _clean_string_list(value: object) -> list[str]:
 
 def _parse_iso_date(value: object) -> str:
     """Normalize valid date-like values to ISO calendar dates; invalid values are empty."""
-    if value is None or pd.isna(value):
+    if value is None or isinstance(value, (list, tuple, set, dict)):
         return ""
-    parsed = pd.to_datetime(str(value).strip(), errors="coerce", utc=True)
+    try:
+        if pd.isna(value):
+            return ""
+    except (TypeError, ValueError):
+        return ""
+    text = str(value).strip()
+    if not text:
+        return ""
+    # Crossref usually supplies YYYY-MM-DD, but accepting year/month precision
+    # makes snapshots from other sources deterministic too.
+    year_or_month = re.fullmatch(r"(\d{4})(?:[-/](\d{1,2}))?", text)
+    if year_or_month:
+        year, month = year_or_month.groups()
+        try:
+            return date(int(year), int(month or 1), 1).isoformat()
+        except ValueError:
+            return ""
+    parsed = pd.to_datetime(text, errors="coerce", utc=True)
     if pd.isna(parsed):
         return ""
     return parsed.date().isoformat()
@@ -118,6 +160,31 @@ def validate_raw_to_clean(records: list[PaperRecord], run_date: datetime) -> dic
     return validate_clean_dataframe(build_clean_dataframe(records, run_date))
 
 
+def write_clean_artifacts(
+    df: pd.DataFrame,
+    clean_csv_path: Path,
+    clean_json_path: Path,
+    audit_log_path: Path | None = None,
+) -> dict[str, Any]:
+    """Persist the clean-data contract and its raw-to-clean reconciliation log.
+
+    ``DataFrame.attrs['cleaning_audit']`` is populated by
+    :func:`build_clean_dataframe`, so the log stays coupled to the exact frame
+    written to disk.  Callers that construct a frame independently still get a
+    useful output-row count.
+    """
+    validate_clean_dataframe(df)
+    write_csv(df, clean_csv_path)
+    write_json(clean_json_path, df.to_dict(orient="records"))
+
+    audit = dict(df.attrs.get("cleaning_audit", {}))
+    audit["output_rows"] = len(df)
+    audit["clean_csv"] = str(clean_csv_path)
+    audit["clean_json"] = str(clean_json_path)
+    write_json(audit_log_path or clean_json_path.with_name("cleaning_log.json"), audit)
+    return audit
+
+
 def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.DataFrame:
     """Normalize raw records into the stable schema consumed by all downstream stages.
 
@@ -129,14 +196,37 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
     run_day: date = run_date.date()
     rows: list[dict[str, Any]] = []
     seen_ids: set[str] = set()
+    filter_counts = {
+        "missing_paper_id": 0,
+        "missing_title": 0,
+        "missing_summary": 0,
+        "invalid_published": 0,
+        "duplicate_paper_id": 0,
+    }
 
     for record in records:
         raw = record.__dict__
         paper_id = _clean_text(raw.get("paper_id")).lower()
-        title = _clean_text(raw.get("title"))
+        title = _clean_title(raw.get("title"))
         summary = _clean_text(raw.get("summary"))
         published = _parse_iso_date(raw.get("published"))
-        if not paper_id or not title or not summary or not published or paper_id in seen_ids:
+        # Stable IDs are deduplicated after required-field validation.  This
+        # makes the count explain whether a row was malformed or was a genuine
+        # duplicate of an otherwise usable document.
+        if not paper_id:
+            filter_counts["missing_paper_id"] += 1
+            continue
+        if not title:
+            filter_counts["missing_title"] += 1
+            continue
+        if not summary:
+            filter_counts["missing_summary"] += 1
+            continue
+        if not published:
+            filter_counts["invalid_published"] += 1
+            continue
+        if paper_id in seen_ids:
+            filter_counts["duplicate_paper_id"] += 1
             continue
         seen_ids.add(paper_id)
 
@@ -145,8 +235,14 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
         primary_category = _clean_text(raw.get("primary_category"))
         if not primary_category and categories:
             primary_category = categories[0]
-        if primary_category and primary_category.casefold() not in {item.casefold() for item in categories}:
-            categories.insert(0, primary_category)
+        if primary_category:
+            existing_category = next(
+                (category for category in categories if category.casefold() == primary_category.casefold()), None
+            )
+            if existing_category:
+                primary_category = existing_category
+            else:
+                categories.insert(0, primary_category)
 
         published_day = date.fromisoformat(published)
         row: dict[str, Any] = {
@@ -173,4 +269,10 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
     if not df.empty:
         df = df.sort_values(["published", "paper_id"], ascending=[False, True], kind="stable").reset_index(drop=True)
         validate_clean_dataframe(df)
+    df.attrs["cleaning_audit"] = {
+        "input_rows": len(records),
+        "output_rows": len(df),
+        "filtered_or_deduplicated_rows": sum(filter_counts.values()),
+        "counts_by_reason": filter_counts,
+    }
     return df
