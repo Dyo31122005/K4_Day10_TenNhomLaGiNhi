@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 import sys
 
@@ -20,9 +21,16 @@ from pydantic import BaseModel
 from core.config import load_settings
 from core.utils import read_json
 from llm_fallback import iter_llm_candidates
-from retrieval.agent import build_agent, run_agent_question
+from retrieval.agent import build_agent, run_agent_question_audited
 from retrieval.index import LocalEmbeddingIndex
 from retrieval.qa import answer_question
+
+# Pipeline trace — shows in the uvicorn terminal what actually happened per
+# request: which dataset/collection, which LLM provider was tried/used, which
+# tool the agent called and with what result. Plain print-based access logs
+# (uvicorn's default) only show "POST /chat 200 OK", not any of this.
+logging.basicConfig(level=logging.INFO, format="%(message)s")
+trace = logging.getLogger("pipeline_trace")
 
 settings = load_settings(project_dir=ROOT)
 
@@ -77,6 +85,7 @@ def _get_index(dataset: str) -> LocalEmbeddingIndex:
     except Exception as exc:
         raise HTTPException(500, f"Không load được index '{dataset}': {exc}") from exc
     _index_cache[dataset] = index
+    trace.info("[TRACE] index loaded: dataset=%s collection=%s docs=%d", dataset, index.collection_name, len(index.documents))
     return index
 
 
@@ -92,11 +101,21 @@ def _answer_with_fallback(question: str, index: LocalEmbeddingIndex) -> tuple[st
     last_error: Exception | None = None
     for name, candidate_settings in iter_llm_candidates(settings):
         attempted.append(name)
+        trace.info("[TRACE] llm_fallback: trying provider=%s", name)
         try:
             agent = build_agent(candidate_settings, index)
-            answer = run_agent_question(agent, question)
-            return answer, name
+            audit = run_agent_question_audited(agent, question, collection_name=index.collection_name)
+            trace.info(
+                "[TRACE] agent run: provider=%s tool_calls=%s used_retrieval_tool=%s",
+                name, audit.tool_names, audit.used_retrieval_tool,
+            )
+            for tool_name, tool_output in zip(audit.tool_names, audit.tool_outputs):
+                preview = tool_output[:200].replace("\n", " ")
+                trace.info("[TRACE]   -> tool=%s output_preview=%r", tool_name, preview)
+            trace.info("[TRACE] provider=%s SUCCEEDED", name)
+            return audit.answer, name
         except Exception as exc:  # noqa: BLE001 - genuinely any provider/network failure should fall through
+            trace.info("[TRACE] provider=%s FAILED: %s", name, exc)
             last_error = exc
             continue
 
@@ -186,6 +205,9 @@ def chat(payload: ChatRequest):
     if not question:
         raise HTTPException(400, "question không được để trống.")
 
+    trace.info("=" * 70)
+    trace.info("[TRACE] /chat request: dataset=%s mode=%s question=%r", payload.dataset, payload.mode, question)
+
     if payload.mode == "qa":
         index = _get_index(payload.dataset)
         result = answer_question(question, settings, index)
@@ -193,12 +215,15 @@ def chat(payload: ChatRequest):
             Source(paper_id=pid, title=title)
             for pid, title in zip(result.retrieved_doc_ids, result.retrieved_titles)
         ]
+        trace.info("[TRACE] qa mode: retrieved_doc_ids=%s", result.retrieved_doc_ids)
+        trace.info("[TRACE] answer=%r", result.answer[:200])
         return ChatResponse(answer=result.answer, sources=sources, dataset=payload.dataset, mode="qa")
 
     index = _get_index(payload.dataset)
     answer, provider_used = _answer_with_fallback(question, index)
     hits = index.search(question, top_k=settings.top_k)
     sources = [Source(paper_id=h.paper_id, title=h.title, score=round(h.score, 4)) for h in hits]
+    trace.info("[TRACE] final sources: %s", [(h.paper_id, round(h.score, 3)) for h in hits])
     return ChatResponse(
         answer=answer,
         sources=sources,
