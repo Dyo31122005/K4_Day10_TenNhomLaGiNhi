@@ -10,6 +10,7 @@ import pandas as pd
 from core.config import Settings
 from core.utils import read_json, safe_slug, write_json
 from retrieval.embeddings import MiniLMEmbeddings
+from retrieval.reranker import DEFAULT_RERANKER_MODEL, MiniLMCrossEncoderReranker
 
 
 REQUIRED_CLEAN_COLUMNS = (
@@ -63,6 +64,8 @@ class SearchResult:
     score: float
     content: str
     metadata: dict[str, Any]
+    vector_score: float | None = None
+    rerank_score: float | None = None
 
 
 class LocalEmbeddingIndex:
@@ -79,6 +82,7 @@ class LocalEmbeddingIndex:
         self.persist_path = persist_path
         self.embedding_backend = "chroma"
         self.embedding_model = MiniLMEmbeddings(settings.embedding_model)
+        self.reranker = MiniLMCrossEncoderReranker(DEFAULT_RERANKER_MODEL)
         self.client = chromadb.PersistentClient(path=str(persist_path))
         self.collection = self.client.get_collection(name=collection_name)
         self.documents_by_paper_id = {document["paper_id"].lower(): document for document in documents}
@@ -165,6 +169,8 @@ class LocalEmbeddingIndex:
             {
                 "backend": "chroma",
                 "embedding_model": settings.embedding_model,
+                "reranker_model": DEFAULT_RERANKER_MODEL,
+                "retrieval_strategy": "chroma-cosine-candidates-then-cross-encoder-rerank",
                 "persist_path": str(persist_path),
                 "collection_name": collection_name,
                 "documents": documents,
@@ -187,11 +193,26 @@ class LocalEmbeddingIndex:
             persist_path=Path(payload["persist_path"]),
         )
 
-    def search(self, query: str, top_k: int | None = None) -> list[SearchResult]:
+    def search(
+        self,
+        query: str,
+        top_k: int | None = None,
+        rerank: bool = True,
+        candidate_multiplier: int = 4,
+    ) -> list[SearchResult]:
+        requested_k = top_k or self.settings.top_k
+        if requested_k < 1:
+            raise ValueError("top_k must be at least 1.")
+        if candidate_multiplier < 1:
+            raise ValueError("candidate_multiplier must be at least 1.")
+        collection_count = self.collection.count()
+        if collection_count == 0:
+            return []
+        candidate_k = min(collection_count, requested_k * candidate_multiplier if rerank else requested_k)
         query_embedding = self.embedding_model.embed_query(query)
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=top_k or self.settings.top_k,
+            n_results=candidate_k,
             include=["documents", "metadatas", "distances"],
         )
         ids = results.get("ids", [[]])[0]
@@ -210,9 +231,30 @@ class LocalEmbeddingIndex:
                     score=max(0.0, 1.0 - float(distance or 0.0)),
                     content=str(content),
                     metadata=dict(metadata),
+                    vector_score=max(0.0, 1.0 - float(distance or 0.0)),
                 )
             )
-        return scored
+        if not rerank or not scored:
+            return scored[:requested_k]
+
+        rerank_logits = self.reranker.score(query, [item.content for item in scored])
+        reranked = [
+            SearchResult(
+                paper_id=item.paper_id,
+                title=item.title,
+                score=self.reranker.normalized_score(logit),
+                content=item.content,
+                metadata=item.metadata,
+                vector_score=item.vector_score,
+                rerank_score=logit,
+            )
+            for item, logit in zip(scored, rerank_logits, strict=True)
+        ]
+        reranked.sort(
+            key=lambda item: item.rerank_score if item.rerank_score is not None else float("-inf"),
+            reverse=True,
+        )
+        return reranked[:requested_k]
 
     def lookup(self, value: str) -> dict[str, Any] | None:
         needle = value.strip().lower()

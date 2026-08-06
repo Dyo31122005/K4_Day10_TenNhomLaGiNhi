@@ -21,6 +21,7 @@ from retrieval.index import (
     load_clean_dataframe,
     prepare_smoke_checks,
 )
+from retrieval.reranker import DEFAULT_RERANKER_MODEL
 
 
 IndexVariant = Literal["baseline", "corrupted", "repaired"]
@@ -44,6 +45,7 @@ class IndexVerification:
     paper_ids_match: bool
     contents_match: bool
     embedding_model_match: bool
+    reranker_model_match: bool
     passed: bool
 
 
@@ -54,6 +56,8 @@ class SmokeResult:
     search_paper_ids: list[str]
     search_titles: list[str]
     search_scores: list[float]
+    vector_scores: list[float | None]
+    rerank_logits: list[float | None]
     lookup_paper_id: str | None
     search_hit: bool
     lookup_hit: bool
@@ -129,6 +133,7 @@ def verify_index_manifest(
     paper_ids_match = expected_ids == manifest_ids
     contents_match = _documents_digest(expected_documents) == _documents_digest(manifest_documents)
     model_match = payload.get("embedding_model") == settings.embedding_model
+    reranker_match = payload.get("reranker_model") == DEFAULT_RERANKER_MODEL
     collection_count = index.collection.count()
     passed = all(
         (
@@ -137,6 +142,7 @@ def verify_index_manifest(
             paper_ids_match,
             contents_match,
             model_match,
+            reranker_match,
         )
     )
     return IndexVerification(
@@ -147,6 +153,7 @@ def verify_index_manifest(
         paper_ids_match=paper_ids_match,
         contents_match=contents_match,
         embedding_model_match=model_match,
+        reranker_model_match=reranker_match,
         passed=passed,
     )
 
@@ -162,6 +169,8 @@ def run_smoke_check(index: LocalEmbeddingIndex, check: SmokeCheck, top_k: int = 
         search_paper_ids=result_ids,
         search_titles=[item.title for item in results],
         search_scores=[round(item.score, 6) for item in results],
+        vector_scores=[round(item.vector_score, 6) if item.vector_score is not None else None for item in results],
+        rerank_logits=[round(item.rerank_score, 6) if item.rerank_score is not None else None for item in results],
         lookup_paper_id=lookup_id,
         search_hit=check.expected_paper_id in result_ids,
         lookup_hit=lookup_id == check.expected_paper_id,
@@ -219,6 +228,7 @@ def build_and_verify_index(
             "manifest_path": str(artifacts.manifest_path.resolve()),
             "persist_path": str(settings.paths.chroma_dir.resolve()),
             "embedding_model": settings.embedding_model,
+            "reranker_model": DEFAULT_RERANKER_MODEL,
             "collection_signature": collection_signature(index),
             "verification": asdict(verification),
             "smoke_result": asdict(smoke_result) if smoke_result else None,
@@ -257,6 +267,7 @@ def build_verify_all_indexes(settings: Settings, report_path: Path | None = None
     )
     outcomes = {
         "embedding_model": settings.embedding_model,
+        "reranker_model": DEFAULT_RERANKER_MODEL,
         "persist_path": str(settings.paths.chroma_dir.resolve()),
         "baseline_query": baseline_check.semantic_query,
         "baseline_unchanged_after_corrupted_build": baseline_unchanged,
@@ -315,6 +326,7 @@ def write_retrieval_report(outcomes: dict[str, Any], path: Path) -> None:
         "# Retrieval collections verification",
         "",
         f"- Embedding model: `{outcomes['embedding_model']}`",
+        f"- Reranker model: `{outcomes['reranker_model']}`",
         f"- Chroma persist path: `{outcomes['persist_path']}`",
         f"- Reproducible baseline query: `{outcomes['baseline_query']}`",
         f"- Baseline unchanged after corrupted build: `{outcomes['baseline_unchanged_after_corrupted_build']}`",

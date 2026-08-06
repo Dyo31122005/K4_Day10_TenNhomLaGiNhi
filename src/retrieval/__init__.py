@@ -19,6 +19,7 @@ from .index import (
 )
 from .llm import build_llm
 from .qa import AnswerResult, answer_question
+from .reranker import DEFAULT_RERANKER_MODEL, MiniLMCrossEncoderReranker
 from .workflow import (
     IndexArtifacts,
     IndexVerification,
@@ -37,11 +38,13 @@ from .workflow import (
 __all__ = [
     "AnswerResult",
     "AgentRunAudit",
+    "DEFAULT_RERANKER_MODEL",
     "IndexArtifacts",
     "IndexConfig",
     "IndexVerification",
     "LocalEmbeddingIndex",
     "MiniLMEmbeddings",
+    "MiniLMCrossEncoderReranker",
     "SearchResult",
     "SmokeCheck",
     "SmokeResult",

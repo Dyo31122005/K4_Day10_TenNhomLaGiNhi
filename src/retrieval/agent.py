@@ -49,7 +49,8 @@ def build_agent_tools(index: LocalEmbeddingIndex) -> list[Any]:
                 f"collection: {index.collection_name}\n"
                 f"paper_id: {result.paper_id}\n"
                 f"title: {result.title}\n"
-                f"score: {result.score:.4f}\n"
+                f"rerank_score: {result.score:.4f}\n"
+                f"vector_score: {(result.vector_score or 0.0):.4f}\n"
                 f"{result.content}"
             )
         return "\n\n".join(lines)
