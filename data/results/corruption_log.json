@@ -1,0 +1,274 @@
+{
+  "input_rows": 24,
+  "output_rows": 25,
+  "operations": [
+    {
+      "type": "drop_latest",
+      "record_ids": [
+        "10.1111/exsy.70341"
+      ],
+      "parameters": {
+        "fraction": 0.1
+      },
+      "before_count": 24,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1111/exsy.70341"
+      ]
+    },
+    {
+      "type": "blank_summary",
+      "record_ids": [
+        "10.2118/234689-pa"
+      ],
+      "parameters": {
+        "value": ""
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "inject_summary_noise",
+      "record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "suffix": "[CORRUPTED-NOISE]"
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ]
+    },
+    {
+      "type": "truncate_title",
+      "record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "max_characters": 24
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ]
+    },
+    {
+      "type": "make_published_stale",
+      "record_ids": [
+        "10.2118/234689-pa"
+      ],
+      "parameters": {
+        "days": -730
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "swap_categories",
+      "record_ids": [
+        "10.2118/234689-pa",
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "fields": [
+          "categories",
+          "primary_category"
+        ]
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9",
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "swap_authors",
+      "record_ids": [
+        "10.2118/234689-pa",
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "fields": [
+          "authors"
+        ]
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9",
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "html_markup_leakage",
+      "record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "markup": "<i>...</i>"
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ]
+    },
+    {
+      "type": "make_published_future",
+      "record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ],
+      "parameters": {
+        "days": 365
+      },
+      "before_count": 23,
+      "after_count": 23,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ]
+    },
+    {
+      "type": "duplicate_row",
+      "record_ids": [
+        "10.2118/234689-pa"
+      ],
+      "parameters": {
+        "copies_added": 1
+      },
+      "before_count": 23,
+      "after_count": 24,
+      "frozen_test_overlap_record_ids": [
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "semantic_near_duplicate",
+      "record_ids": [
+        "10.1007/s10278-026-02086-9#near-duplicate"
+      ],
+      "parameters": {
+        "source_paper_id": "10.1007/s10278-026-02086-9",
+        "copies_added": 1
+      },
+      "before_count": 24,
+      "after_count": 25,
+      "frozen_test_overlap_record_ids": [
+        "10.1007/s10278-026-02086-9"
+      ]
+    }
+  ],
+  "verification": {
+    "is_consistent": true,
+    "baseline_row_count": 24,
+    "corrupted_row_count": 25,
+    "row_count_delta": 1,
+    "missing_baseline_record_ids": [
+      "10.1111/exsy.70341"
+    ],
+    "new_record_ids": [
+      "10.1007/s10278-026-02086-9#near-duplicate"
+    ],
+    "duplicate_paper_ids": [
+      "10.2118/234689-pa"
+    ],
+    "checks": [
+      {
+        "type": "drop_latest",
+        "record_ids": [
+          "10.1111/exsy.70341"
+        ],
+        "passed": true
+      },
+      {
+        "type": "blank_summary",
+        "record_ids": [
+          "10.2118/234689-pa"
+        ],
+        "passed": true
+      },
+      {
+        "type": "inject_summary_noise",
+        "record_ids": [
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "truncate_title",
+        "record_ids": [
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "make_published_stale",
+        "record_ids": [
+          "10.2118/234689-pa"
+        ],
+        "passed": true
+      },
+      {
+        "type": "swap_categories",
+        "record_ids": [
+          "10.2118/234689-pa",
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "swap_authors",
+        "record_ids": [
+          "10.2118/234689-pa",
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "html_markup_leakage",
+        "record_ids": [
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "make_published_future",
+        "record_ids": [
+          "10.1007/s10278-026-02086-9"
+        ],
+        "passed": true
+      },
+      {
+        "type": "duplicate_row",
+        "record_ids": [
+          "10.2118/234689-pa"
+        ],
+        "passed": true
+      },
+      {
+        "type": "semantic_near_duplicate",
+        "record_ids": [
+          "10.1007/s10278-026-02086-9#near-duplicate"
+        ],
+        "passed": true
+      }
+    ]
+  },
+  "frozen_test_set": {
+    "record_ids": [
+      "10.1007/s10278-026-02086-9",
+      "10.1111/exsy.70341",
+      "10.2118/234689-pa"
+    ],
+    "all_operations_overlap": true
+  }
+}
