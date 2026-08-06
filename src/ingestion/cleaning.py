@@ -125,15 +125,23 @@ def build_text_for_embedding(row: dict[str, Any]) -> str:
     )
 
 
-def validate_clean_dataframe(df: pd.DataFrame) -> dict[str, Any]:
+def validate_clean_dataframe(
+    df: pd.DataFrame, run_date: date | datetime | None = None
+) -> dict[str, Any]:
     """Validate the clean schema and return a checkpoint-friendly summary.
 
     The function intentionally raises ValueError for contract violations so it
     can be used both in CP1 and before a dataframe is sent to the indexer.
     """
     missing = [column for column in CLEAN_SCHEMA_COLUMNS if column not in df.columns]
-    if missing:
-        raise ValueError(f"Clean dataframe is missing columns: {missing}")
+    unexpected = [column for column in df.columns if column not in CLEAN_SCHEMA_COLUMNS]
+    if missing or unexpected:
+        details = []
+        if missing:
+            details.append(f"missing columns: {missing}")
+        if unexpected:
+            details.append(f"unexpected columns: {unexpected}")
+        raise ValueError(f"Clean dataframe schema mismatch ({'; '.join(details)})")
     null_required = {
         column: int(df[column].isna().sum() + (df[column].astype(str).str.strip() == "").sum())
         for column in RAW_REQUIRED_FIELDS
@@ -141,13 +149,33 @@ def validate_clean_dataframe(df: pd.DataFrame) -> dict[str, Any]:
     duplicate_paper_ids = int(df["paper_id"].duplicated().sum())
     invalid_dates = int(pd.to_datetime(df["published"], errors="coerce").isna().sum())
     short_summaries = int((df["summary"].fillna("").astype(str).str.len() < MIN_SUMMARY_CHARS).sum())
-    empty_embedding_text = int((df["text_for_embedding"].astype(str).str.strip() == "").sum())
+    empty_embedding_text = int((df["text_for_embedding"].fillna("").astype(str).str.strip() == "").sum())
+    expected_embedding_text = df.apply(
+        lambda row: build_text_for_embedding(row.to_dict()), axis=1
+    )
+    embedding_text_mismatches = int((df["text_for_embedding"].fillna("") != expected_embedding_text).sum())
+
+    numeric_age_days = pd.to_numeric(df["age_days"], errors="coerce")
+    invalid_age_days = int(
+        (numeric_age_days.isna() | (numeric_age_days < 0) | (numeric_age_days % 1 != 0)).sum()
+    )
+    age_days_mismatches = 0
+    if run_date is not None:
+        reference_day = run_date.date() if isinstance(run_date, datetime) else run_date
+        published_days = pd.to_datetime(df["published"], errors="coerce").dt.date
+        expected_age_days = published_days.map(
+            lambda published_day: (reference_day - published_day).days if pd.notna(published_day) else None
+        )
+        age_days_mismatches = int((numeric_age_days != expected_age_days).sum())
     failures = {
         "null_required": {key: value for key, value in null_required.items() if value},
         "duplicate_paper_ids": duplicate_paper_ids,
         "invalid_published_dates": invalid_dates,
         "summary_below_minimum_length": short_summaries,
         "empty_embedding_text": empty_embedding_text,
+        "embedding_text_mismatches": embedding_text_mismatches,
+        "invalid_age_days": invalid_age_days,
+        "age_days_mismatches": age_days_mismatches,
     }
     if any(failures.values()):
         raise ValueError(f"Clean dataframe validation failed: {failures}")
@@ -176,11 +204,16 @@ def write_clean_artifacts(
     clean_csv_path = clean_csv_path or default_clean_dir / "papers_clean.csv"
     clean_json_path = clean_json_path or default_clean_dir / "papers_clean.json"
 
-    validate_clean_dataframe(df)
+    audit = dict(df.attrs.get("cleaning_audit", {}))
+    audit_run_date = audit.get("run_date")
+    parsed_run_date = date.fromisoformat(audit_run_date) if audit_run_date else None
+    validate_clean_dataframe(df, parsed_run_date)
     write_csv(df, clean_csv_path)
     write_json(clean_json_path, df.to_dict(orient="records"))
 
-    audit = dict(df.attrs.get("cleaning_audit", {}))
+    persisted_json = pd.DataFrame(pd.read_json(clean_json_path))
+    validate_clean_dataframe(persisted_json, parsed_run_date)
+
     audit["output_rows"] = len(df)
     audit["clean_csv"] = str(clean_csv_path)
     audit["clean_json"] = str(clean_json_path)
@@ -276,12 +309,13 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime | None 
     df = pd.DataFrame(rows, columns=CLEAN_SCHEMA_COLUMNS)
     if not df.empty:
         df = df.sort_values(["published", "paper_id"], ascending=[False, True], kind="stable").reset_index(drop=True)
-        validate_clean_dataframe(df)
+        validate_clean_dataframe(df, run_day)
     df.attrs["cleaning_audit"] = {
         "input_rows": len(records),
         "output_rows": len(df),
         "filtered_or_deduplicated_rows": sum(filter_counts.values()),
         "counts_by_reason": filter_counts,
+        "run_date": run_day.isoformat(),
     }
     return df
 
