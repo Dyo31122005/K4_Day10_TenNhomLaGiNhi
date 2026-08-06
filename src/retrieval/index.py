@@ -186,11 +186,16 @@ class LocalEmbeddingIndex:
     @classmethod
     def load(cls, settings: Settings, embeddings_path: Path | None = None) -> "LocalEmbeddingIndex":
         payload = read_json(embeddings_path or settings.paths.embeddings_json)
+        # `payload["persist_path"]` is whatever absolute path was on the machine
+        # that ran `build()` (a teammate's `D:\...`/`E:\...`/`H:\...`), so trusting
+        # it here breaks on every other machine with `chromadb.errors.NotFoundError`
+        # for a collection that in fact exists, just under this machine's own
+        # `settings.paths.chroma_dir`. Always resolve locally instead.
         return cls(
             settings=settings,
             collection_name=payload["collection_name"],
             documents=payload["documents"],
-            persist_path=Path(payload["persist_path"]),
+            persist_path=settings.paths.chroma_dir,
         )
 
     def search(

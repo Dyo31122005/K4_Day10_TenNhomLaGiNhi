@@ -43,27 +43,6 @@ app.add_middleware(
 _index_cache: dict[str, LocalEmbeddingIndex] = {}
 
 
-def _load_index_local(embeddings_path: Path) -> LocalEmbeddingIndex:
-    """Load an index manifest but ignore its recorded `persist_path`.
-
-    `LocalEmbeddingIndex.load()` trusts the absolute `persist_path` baked into
-    the manifest at build time -- but that path reflects whichever teammate's
-    machine last regenerated the embeddings (seen so far: `D:\\Anh Tuan\\...`,
-    `H:\\Lab_day10\\...`), not this machine. Chroma then raises
-    `chromadb.errors.NotFoundError` for a collection that in fact exists, just
-    under `settings.paths.chroma_dir` locally. Rebuilding the same object via
-    the public constructor with the local path sidesteps that without editing
-    the shared retrieval/index.py contract.
-    """
-    payload = read_json(embeddings_path)
-    return LocalEmbeddingIndex(
-        settings=settings,
-        collection_name=payload["collection_name"],
-        documents=payload["documents"],
-        persist_path=settings.paths.chroma_dir,
-    )
-
-
 def _get_index(dataset: str) -> LocalEmbeddingIndex:
     if dataset not in DATASET_PATHS:
         raise HTTPException(400, f"Unknown dataset '{dataset}'. Expected one of {list(DATASET_PATHS)}.")
@@ -78,7 +57,7 @@ def _get_index(dataset: str) -> LocalEmbeddingIndex:
             f"Đợi role RAG/lead chạy xong checkpoint tương ứng rồi thử lại.",
         )
     try:
-        index = _load_index_local(path)
+        index = LocalEmbeddingIndex.load(settings, embeddings_path=path)
     except Exception as exc:
         raise HTTPException(500, f"Không load được index '{dataset}': {exc}") from exc
     _index_cache[dataset] = index
