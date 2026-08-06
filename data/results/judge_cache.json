@@ -138,5 +138,40 @@
     "score": 5,
     "correct": true,
     "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.|||Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for combining large language models with external knowledge sources to produce accurate, context-aware, and verifiable outputs.": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer does not summarize the specific content of the paper as requested. It provides a general statement about Retrieval-Augmented Generation (RAG) but fails to address the issues of context overload, semantic collision, and selection accuracy mentioned in the reference answer."
+  },
+  "Who authored the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?|||Wei Tian, Yuhao Zhou|||Lihui Liu": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer incorrectly attributes the authorship of the paper to Lihui Liu, while the reference answer correctly identifies Wei Tian and Yuhao Zhou as the authors."
+  },
+  "When was the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?|||2026-08-01|||2026-05-06": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer is incorrect as it provides a date (2026-05-06) that is earlier than the reference answer (2026-08-01), which is the correct publication date."
+  },
+  "Provide a summary of the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'|||Summary In high-risk industrial settings, leveraging large language models (LLMs) for automated accident analysis and generating safety reports has emerged as an efficient workflow.|||Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for combining large language models with external knowledge sources to produce accurate, context-aware, and verifiable outputs.": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer discusses the concept of Retrieval-Augmented Generation (RAG) but does not specifically summarize the paper's focus on safety report generation in high-risk industrial settings, which is a key aspect of the reference answer."
+  },
+  "Who authored the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'?|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li|||Muhammad Dzaki Salman, Rahmaddeni, Torkis Nasution, Susanti": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer lists authors who are not mentioned in the reference answer, indicating a complete mismatch."
+  },
+  "When was the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation' published?|||2026-08-01|||2026-07-10": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer is incorrect as it provides a date (2026-07-10) that is not the same as the reference answer (2026-08-01). The model answer is close but not materially correct."
+  },
+  "Provide a summary of the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'|||Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning.|||": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer does not provide a summary of the paper as requested. It lacks key details about the framework, its development, and validation, which are essential for a comprehensive summary."
   }
 }
