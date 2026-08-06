@@ -53,3 +53,24 @@ Từ: Mạnh (role 2 – ingest) — Đến: Mai Anh (role 3 – clean)
 ```
 
 Lưu ý: record mẫu này có `published` rỗng ở raw thô ban đầu (posted-content chưa có published-print), nhưng sau fallback trong `_extract_date` (`published-print → published-online → published → issued`) đã được lấp — 0/24 record có `published` rỗng trong `crossref_records.json` cuối cùng.
+
+## Baseline snapshot đã khóa (kể từ CP2)
+
+`data/raw/crossref_response.json` và `data/raw/crossref_records.json` được coi là **cố định** kể từ CP2 trở đi — không ai được chạy lại `fetch_source_records()` cho tới khi cả nhóm hoàn tất baseline/corruption/repair (CP6), vì:
+
+- Crossref index thay đổi liên tục (`total-results` đã thấy dao động ~101k ở lần fetch CP0) — fetch lại có thể đổi 24 record, phá vỡ khả năng so sánh baseline vs corrupted vs repaired.
+- Repair ở CP6 phải dùng đúng snapshot này qua `load_raw_records()`, không fetch mới — nếu source đổi giữa chừng, "phục hồi" sẽ không còn ý nghĩa.
+
+Nếu thực sự cần fetch lại (ví dụ raw data lỗi), phải báo cho cả nhóm trước, vì mọi test set/index/metrics đang tính từ 24 record hiện tại.
+
+## CP2 verification — raw → clean traceability (Mạnh, role 2)
+
+Sau khi Mai Anh push `data/clean/papers_clean.csv/json` + `cleaning_log.json`, đã đối chiếu lại từ phía ingestion:
+
+- **`paper_id` traceability**: tập hợp 24 `paper_id` ở `crossref_records.json` (raw) và `papers_clean.json` (clean) **khớp tuyệt đối** — không mất, không sinh thêm record nào (`raw_ids == clean_ids` → `True`).
+- **`cleaning_log.json`**: `input_rows=24`, `output_rows=24`, `filtered_or_deduplicated_rows=0` — khớp với kết quả đối chiếu thủ công ở trên.
+- **Schema clean đủ mọi cột retrieval cần**: `paper_id, title, text_for_embedding, published, authors_joined, categories_joined, summary, age_days` đều có mặt.
+- **Vấn đề đã cảnh báo ở trên** (tag `<scp>RAG</scp>` dính trong title bài Hi-RAG) — Mai Anh đã xử lý: title giờ là `Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework...`, sạch tag.
+- **Chạy thử `retrieval.index.validate_clean_dataframe(df, strict_content=True)`** (hàm Trà dùng để gate trước khi build ChromaDB) trên `papers_clean.csv` → **PASS**, không có lỗi. Nghĩa là khi Trà build index, không nên gặp lỗi validation từ phía data.
+
+Kết luận: raw → clean đã traceable đầy đủ, sẵn sàng cho bước build embedding/index.

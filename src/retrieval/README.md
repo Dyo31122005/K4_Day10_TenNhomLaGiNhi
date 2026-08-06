@@ -7,6 +7,7 @@ Module `src/retrieval` phụ trách biến dữ liệu paper đã làm sạch th
 | File | Trách nhiệm |
 |---|---|
 | `embeddings.py` | Nạp Sentence Transformer và tạo embedding cho document/query. |
+| `reranker.py` | Chấm relevance theo cặp query/document bằng CrossEncoder MiniLM. |
 | `index.py` | Kiểm tra clean schema, build/load Chroma collection, semantic search và exact lookup. |
 | `agent.py` | Tạo hai LangChain tools, tạo agent và audit việc agent sử dụng tool. |
 | `llm.py` | Provider abstraction cho Gemini, OpenAI, Anthropic, OpenRouter, Ollama và custom OpenAI-compatible endpoint. |
@@ -33,7 +34,8 @@ clean CSV/JSON
     ├─ embedding manifest + build log
     │
     └─ query
-            ├─ semantic search → MiniLM → cosine/HNSW → top-k
+            ├─ semantic search → MiniLM → cosine/HNSW candidates
+            │                           → CrossEncoder rerank → top-k
             └─ exact lookup → normalized paper_id/title → dictionary lookup
                     │
                     └─ agent tools → grounded answer + tool audit
@@ -94,13 +96,6 @@ v_normalized = v / ||v||₂
 
 Model được cache bằng `lru_cache`, tránh load lại weights khi nhiều index dùng cùng model trong một process.
 
-### Vì sao dùng MiniLM?
-
-- Nhẹ và phù hợp chạy local.
-- Encode nhanh hơn các encoder lớn.
-- Cùng model được dùng cho document và query nên hai loại vector nằm trong cùng semantic space.
-- Phù hợp corpus nhỏ của bài lab và smoke test retrieval.
-
 ## ChromaDB và thuật toán tìm kiếm
 
 Index dùng `chromadb.PersistentClient` và collection được cấu hình:
@@ -124,7 +119,7 @@ Do vector đã chuẩn hóa L2, cosine similarity tương đương dot product. 
 score = max(0, 1 - distance)
 ```
 
-Kết quả được giữ theo thứ tự Chroma trả về, tức thứ tự cosine gần nhất. `top_k` mặc định lấy từ `Settings.top_k` và hiện là 4.
+Thứ tự Chroma chỉ được dùng cho candidate generation; CrossEncoder sẽ sắp xếp lại candidates trước khi trả kết quả cuối. `top_k` mặc định lấy từ `Settings.top_k` và hiện là 4.
 
 ## Semantic search
 
@@ -135,7 +130,9 @@ Thuật toán:
 1. Chuẩn hóa query thành embedding bằng MiniLM.
 2. Gửi query vector tới Chroma `collection.query()`.
 3. HNSW tìm `top_k` vector có cosine distance nhỏ nhất.
-4. Chuyển distance thành score và trả `paper_id`, title, content, metadata.
+4. Lấy candidate set có kích thước tối đa `top_k × 4`.
+5. CrossEncoder chấm lại từng cặp `(query, candidate content)`.
+6. Sort giảm dần theo rerank logit và trả top-k cùng vector/rerank score.
 
 Ví dụ chạy sau khi đã build baseline:
 
@@ -203,17 +200,47 @@ Khác biệt quan trọng:
 
 ## Reranking
 
-Hiện module **không có reranker tầng hai**.
-
-Pipeline hiện tại chỉ có một ranking stage:
+Module có reranker tầng hai dùng:
 
 ```text
-MiniLM query embedding → Chroma cosine/HNSW → top-k
+cross-encoder/ms-marco-MiniLM-L-6-v2
 ```
 
-Không có CrossEncoder, LLM reranker, BM25 hybrid score hay reciprocal-rank fusion. Vì vậy không nên trình bày score hiện tại là “rerank score”; nó chỉ là cosine score được chuyển từ Chroma distance.
+Khác với bi-encoder embedding model, CrossEncoder nhận query và document cùng lúc:
 
-Nếu bổ sung reranking sau này, flow phù hợp là lấy top 10–20 candidates từ Chroma, dùng CrossEncoder chấm điểm từng cặp `(query, document)`, sort lại và chỉ trả top 4. Bước này có thể tăng độ chính xác nhưng làm tăng latency và hiện chưa nằm trong implementation.
+```text
+logit = CrossEncoder(query, document)
+```
+
+Nhờ self-attention giữa token của query và document, CrossEncoder đánh giá relevance chính xác hơn cosine retrieval, nhưng phải chạy inference cho từng candidate nên chậm hơn. Module cân bằng hai yếu tố bằng pipeline hai tầng:
+
+```text
+Stage 1: Chroma HNSW lấy top-(top_k × 4) candidates nhanh
+Stage 2: CrossEncoder chấm candidates, sort theo logit, lấy top_k
+```
+
+Ví dụ `top_k=4` sẽ lấy tối đa 16 candidates từ Chroma trước khi rerank. Nếu collection có ít hơn 16 documents thì lấy toàn bộ số documents hiện có.
+
+`SearchResult` giữ ba score:
+
+- `vector_score`: `max(0, 1 - cosine_distance)` của Chroma.
+- `rerank_score`: raw relevance logit của CrossEncoder, dùng để sort.
+- `score`: sigmoid của rerank logit trong khoảng 0–1, dùng để hiển thị.
+
+```text
+display_score = sigmoid(logit) = 1 / (1 + exp(-logit))
+```
+
+Sigmoid chỉ giúp score dễ đọc; thứ tự ranking vẫn dựa trực tiếp trên raw logit. Không so sánh tuyệt đối rerank score giữa các model khác nhau.
+
+Reranking bật mặc định. Có thể tắt để đo baseline vector-only:
+
+```python
+vector_only = index.search(query, top_k=4, rerank=False)
+reranked = index.search(query, top_k=4, rerank=True, candidate_multiplier=4)
+```
+
+Module hiện chưa có BM25 hybrid retrieval hoặc reciprocal-rank fusion.
 
 ## Agent và grounding
 
@@ -259,8 +286,8 @@ Workflow thực hiện các kiểm tra sau:
 1. Clean row count bằng số document trong manifest và Chroma.
 2. Thứ tự/danh sách `paper_id` của clean data và manifest khớp nhau.
 3. SHA-256 của title/content khớp nhau.
-4. Embedding model trong manifest đúng config.
-5. Semantic search tìm thấy expected paper trong top-k.
+4. Embedding model và reranker model trong manifest đúng config.
+5. Semantic search + reranking tìm thấy expected paper trong top-k.
 6. Exact lookup trả đúng expected `paper_id`.
 7. Sau khi build corrupted, chữ ký baseline vẫn không đổi.
 8. Cùng baseline query được chạy trên baseline, corrupted và repaired để quan sát thay đổi ranking.

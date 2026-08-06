@@ -1,0 +1,177 @@
+{
+  "Provide a summary of the paper 'Hi\u2010 RAG : A Hierarchical Retrieval\u2010Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is an exact character-for-character match of the provided reference answer, indicating perfect alignment with the expected ground truth."
+  },
+  "Who authored the paper 'Hi\u2010 RAG : A Hierarchical Retrieval\u2010Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?|||Wei Tian, Yuhao Zhou|||Wei Tian, Yuhao Zhou": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct authors of the paper."
+  },
+  "When was the paper 'Hi\u2010 RAG : A Hierarchical Retrieval\u2010Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?|||2026-08-01|||2026-08-01": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'Hi\u2010 RAG : A Hierarchical Retrieval\u2010Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'|||Summary In high-risk industrial settings, leveraging large language models (LLMs) for automated accident analysis and generating safety reports has emerged as an efficient workflow.|||Summary In high-risk industrial settings, leveraging large language models (LLMs) for automated accident analysis and generating safety reports has emerged as an efficient workflow.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key points of the paper."
+  },
+  "Who authored the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'?|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing all the authors' names correctly."
+  },
+  "When was the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation' published?|||2026-08-01|||2026-08-01": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer accurately identifies the category of the paper as a 'journal article', which matches the reference answer perfectly."
+  },
+  "Provide a summary of the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'|||Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning.|||Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key points of the paper."
+  },
+  "Who authored the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'?|||Soroush Baseri Saadi, Jonas Ver Berne, Rocharles Cavalcante Fontenele, Peter Claes, Reinhilde Jacobs|||Soroush Baseri Saadi, Jonas Ver Berne, Rocharles Cavalcante Fontenele, Peter Claes, Reinhilde Jacobs": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing all the authors' names in the correct order."
+  },
+  "When was the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study' published?|||2026-07-13|||2026-07-13": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'Retrieval-Augmented Large-Language-Model-Based Time-Series Forecasting for Cross-Market Equity Analysis'|||Abstract Time-series foundation models and retrieval-based augmentation have recently emerged as relevant tools for financial forecasting, yet it remains unclear when explicit historical retrieval helps a pre-trained probabilistic forecaster in noisy equity settings.|||Abstract Time-series foundation models and retrieval-based augmentation have recently emerged as relevant tools for financial forecasting, yet it remains unclear when explicit historical retrieval helps a pre-trained probabilistic forecaster in noisy equity settings.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key points of the paper."
+  },
+  "Who authored the paper 'Retrieval-Augmented Large-Language-Model-Based Time-Series Forecasting for Cross-Market Equity Analysis'?|||Novanto Yudistira, Yanuar Putra Kharisma Adhiyasa|||Novanto Yudistira, Yanuar Putra Kharisma Adhiyasa": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct authors of the paper."
+  },
+  "When was the paper 'Retrieval-Augmented Large-Language-Model-Based Time-Series Forecasting for Cross-Market Equity Analysis' published?|||2026-07-10|||2026-07-10": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'Retrieval-Augmented Large-Language-Model-Based Time-Series Forecasting for Cross-Market Equity Analysis' belong to?|||posted content|||posted content": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, indicating that it is materially correct."
+  },
+  "Provide a summary of the paper 'Does retrieval-augmented generation impact medical students\u2019 perceptions of large language models? (Preprint)'|||BACKGROUND There is evidence of rapid adoption of large language models (LLMs) in undergraduate medical education, with medical students using it to support their learning.|||BACKGROUND There is evidence of rapid adoption of large language models (LLMs) in undergraduate medical education, with medical students using it to support their learning.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the background of the paper regarding the adoption of large language models in medical education."
+  },
+  "Who authored the paper 'Does retrieval-augmented generation impact medical students\u2019 perceptions of large language models? (Preprint)'?|||Rohin Athavale, Alexander Cresswell, Alice Huffman|||Rohin Athavale, Alexander Cresswell, Alice Huffman": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct authors of the paper."
+  },
+  "When was the paper 'Does retrieval-augmented generation impact medical students\u2019 perceptions of large language models? (Preprint)' published?|||2026-07-03|||2026-07-03": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'Does retrieval-augmented generation impact medical students\u2019 perceptions of large language models? (Preprint)' belong to?|||posted content|||posted content": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, indicating that it is materially correct."
+  },
+  "Provide a summary of the paper 'An Agentic AI System for Roof Design Compliance Using Computer Vision, Retrieval-Augmented Generation and Large Language Models'|||Designers, engineers, and building officials face increasing pressure to accelerate and improve the accuracy of design review for buildings and infrastructure.|||Designers, engineers, and building officials face increasing pressure to accelerate and improve the accuracy of design review for buildings and infrastructure.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key point about the pressures faced by designers, engineers, and building officials in the context of design review."
+  },
+  "Who authored the paper 'An Agentic AI System for Roof Design Compliance Using Computer Vision, Retrieval-Augmented Generation and Large Language Models'?|||Nawari O. Nawari, Oluwatoyin O. Lawal|||Nawari O. Nawari, Oluwatoyin O. Lawal": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct authors of the paper."
+  },
+  "When was the paper 'An Agentic AI System for Roof Design Compliance Using Computer Vision, Retrieval-Augmented Generation and Large Language Models' published?|||2026-07-02|||2026-07-02": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'An Agentic AI System for Roof Design Compliance Using Computer Vision, Retrieval-Augmented Generation and Large Language Models' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer is identical to the reference answer, accurately summarizing the key points of the paper's abstract."
+  },
+  "Who authored the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?|||Wei Tian, Yuhao Zhou|||Wei Tian, Yuhao Zhou": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the authors of the paper as Wei Tian and Yuhao Zhou, matching the reference answer exactly."
+  },
+  "When was the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?|||2026-08-01|||2026-08-01": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer matches the reference answer exactly, providing the correct publication date."
+  },
+  "What categories does the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' belong to?|||journal article|||journal article": {
+    "score": 5,
+    "correct": true,
+    "reasoning": "The model answer correctly identifies the category of the paper as a 'journal article', which matches the reference answer exactly."
+  },
+  "Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'|||ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.|||Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for combining large language models with external knowledge sources to produce accurate, context-aware, and verifiable outputs.": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer does not summarize the specific content of the paper as requested. It provides a general statement about Retrieval-Augmented Generation (RAG) but fails to address the issues of context overload, semantic collision, and selection accuracy mentioned in the reference answer."
+  },
+  "Who authored the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?|||Wei Tian, Yuhao Zhou|||Lihui Liu": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer incorrectly attributes the authorship of the paper to Lihui Liu, while the reference answer correctly identifies Wei Tian and Yuhao Zhou as the authors."
+  },
+  "When was the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?|||2026-08-01|||2026-05-06": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer is incorrect as it provides a date (2026-05-06) that is earlier than the reference answer (2026-08-01), which is the correct publication date."
+  },
+  "Provide a summary of the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'|||Summary In high-risk industrial settings, leveraging large language models (LLMs) for automated accident analysis and generating safety reports has emerged as an efficient workflow.|||Retrieval-Augmented Generation (RAG) has emerged as a powerful paradigm for combining large language models with external knowledge sources to produce accurate, context-aware, and verifiable outputs.": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer discusses the concept of Retrieval-Augmented Generation (RAG) but does not specifically summarize the paper's focus on safety report generation in high-risk industrial settings, which is a key aspect of the reference answer."
+  },
+  "Who authored the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation'?|||Qianwen Cao, Chiyu Zhang, Junxiong Ning, Gongru Li|||Muhammad Dzaki Salman, Rahmaddeni, Torkis Nasution, Susanti": {
+    "score": 1,
+    "correct": false,
+    "reasoning": "The model answer lists authors who are not mentioned in the reference answer, indicating a complete mismatch."
+  },
+  "When was the paper 'SafeRAG: A Large-Language-Model-Based Multistage Retrieval-Augmented Framework for Oil and Gas Safety Report Generation' published?|||2026-08-01|||2026-07-10": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer is incorrect as it provides a date (2026-07-10) that is not the same as the reference answer (2026-08-01). The model answer is close but not materially correct."
+  },
+  "Provide a summary of the paper 'JADE-Plus: A Multimodal Agentic Retrieval-Augmented Generation Large Language Framework for Diagnostic Support in Jawbone Lesions: Development and Technical Validation Study'|||Abstract Diagnosing jawbone lesions in oral and maxillofacial radiology remains challenging due to overlapping radiological features and the need for integrated clinical reasoning.|||": {
+    "score": 2,
+    "correct": false,
+    "reasoning": "The model answer does not provide a summary of the paper as requested. It lacks key details about the framework, its development, and validation, which are essential for a comprehensive summary."
+  }
+}

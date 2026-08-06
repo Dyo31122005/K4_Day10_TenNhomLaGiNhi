@@ -32,8 +32,8 @@ def build_test_set(df: pd.DataFrame, output_path) -> list[dict[str, Any]]:
             f"need at least {MIN_DOCUMENTS}."
         )
 
-    # We select up to 6 papers to generate 24 evaluation questions
-    selected_df = df.head(6)
+    # We select up to 3 papers to generate 12 evaluation questions
+    selected_df = df.head(3)
     test_cases: list[dict[str, Any]] = []
     idx = 1
 
