@@ -1,0 +1,33 @@
+{
+  "input_rows": 24,
+  "output_rows": 23,
+  "operations": [
+    {
+      "type": "drop_latest",
+      "paper_ids": [
+        "10.1111/exsy.70341",
+        "10.2118/234689-pa"
+      ]
+    },
+    {
+      "type": "blank_summary",
+      "paper_id": "10.1007/s10278-026-02086-9"
+    },
+    {
+      "type": "inject_summary_noise",
+      "paper_id": "10.21203/rs.3.rs-10178277/v1"
+    },
+    {
+      "type": "truncate_title",
+      "paper_id": "10.2196/preprints.106157"
+    },
+    {
+      "type": "make_published_stale",
+      "paper_id": "10.3390/buildings16132637"
+    },
+    {
+      "type": "duplicate_row",
+      "paper_id": "10.1007/s10278-026-02086-9"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "report_name": "repaired_quality_report.json",
+  "timestamp": "2026-08-06T09:06:06.372691+00:00",
+  "total_rows": 24,
+  "is_valid": true,
+  "checks": {
+    "row_count": {
+      "status": "PASS",
+      "details": "Expected >= 20 rows, got 24"
+    },
+    "paper_id_not_null": {
+      "status": "PASS",
+      "details": "Found 0 null/empty paper_ids"
+    },
+    "paper_id_unique": {
+      "status": "PASS",
+      "details": "Found 0 duplicate paper_ids"
+    },
+    "title_not_null": {
+      "status": "PASS",
+      "details": "Found 0 null/empty titles"
+    },
+    "summary_length": {
+      "status": "PASS",
+      "details": "Found 0 summaries shorter than 100 chars"
+    },
+    "freshness": {
+      "status": "PASS",
+      "details": "Found 0 stale rows older than 180 days"
+    }
+  }
+}
