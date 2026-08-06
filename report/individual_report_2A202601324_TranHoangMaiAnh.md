@@ -5,7 +5,7 @@
 | Thông tin       | Nội dung                                               |
 | --------------- | ------------------------------------------------------ |
 | Họ và tên       | Trần Hoàng Mai Anh                                     |
-| MSSV            | Chưa cung cấp trong repository                         |
+| MSSV            | 2A202601324                                            |
 | Khóa/Lớp        | K4                                                     |
 | Tên nhóm        | TenNhomLaGiNhi                                         |
 | Vai trò chính   | Cleaning & corruption (`clean`)                        |
