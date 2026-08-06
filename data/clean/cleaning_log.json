@@ -1,0 +1,15 @@
+{
+  "input_rows": 24,
+  "output_rows": 24,
+  "filtered_or_deduplicated_rows": 0,
+  "counts_by_reason": {
+    "missing_paper_id": 0,
+    "missing_title": 0,
+    "missing_summary": 0,
+    "summary_below_minimum_length": 0,
+    "invalid_published": 0,
+    "duplicate_paper_id": 0
+  },
+  "clean_csv": "E:\\K4_Day10_TenNhomLaGiNhi\\data\\clean\\papers_clean.csv",
+  "clean_json": "E:\\K4_Day10_TenNhomLaGiNhi\\data\\clean\\papers_clean.json"
+}
