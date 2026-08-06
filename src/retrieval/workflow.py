@@ -9,6 +9,12 @@ from typing import Any, Literal
 
 from core.config import Settings
 from core.utils import read_json, write_json, write_text
+from retrieval.agent import (
+    AgentRunAudit,
+    build_agent,
+    run_agent_question_audited,
+    validate_agent_audit,
+)
 from retrieval.index import (
     LocalEmbeddingIndex,
     SmokeCheck,
@@ -162,6 +168,25 @@ def run_smoke_check(index: LocalEmbeddingIndex, check: SmokeCheck, top_k: int = 
     )
 
 
+def run_agent_smoke(
+    settings: Settings,
+    index: LocalEmbeddingIndex,
+    check: SmokeCheck,
+) -> AgentRunAudit:
+    """Run a factual question and fail unless the agent uses this index's tool output."""
+
+    agent = build_agent(settings, index)
+    question = (
+        f"Use the corpus tools to look up paper_id {check.expected_paper_id!r}. "
+        "Report its title and cite the paper_id. Do not use outside knowledge."
+    )
+    audit = run_agent_question_audited(agent, question, index.collection_name)
+    validate_agent_audit(audit)
+    if check.expected_paper_id not in "\n".join(audit.tool_outputs):
+        raise RuntimeError("Agent tool output did not contain the expected paper_id.")
+    return audit
+
+
 def build_and_verify_index(
     settings: Settings,
     variant: IndexVariant,
@@ -256,6 +281,31 @@ def build_verify_all_indexes(settings: Settings, report_path: Path | None = None
     destination = report_path or settings.paths.project_dir / "data" / "reports" / "retrieval_collections.md"
     write_retrieval_report(outcomes, destination)
     return outcomes
+
+
+def audit_baseline_and_repaired_agents(settings: Settings) -> dict[str, Any]:
+    """Prove both factual agents call tools from their intended collections."""
+
+    baseline_df = load_clean_dataframe(settings.paths.clean_csv)
+    check = prepare_smoke_checks(baseline_df, limit=1)[0]
+    audits: dict[str, Any] = {}
+    for variant, manifest_path in (
+        ("baseline", settings.paths.embeddings_json),
+        ("repaired", settings.paths.repaired_embeddings_json),
+    ):
+        index = LocalEmbeddingIndex.load(settings, manifest_path)
+        audit = run_agent_smoke(settings, index, check)
+        audits[variant] = asdict(audit)
+    audit_path = settings.paths.demo_answers.with_name("retrieval_agent_audit.json")
+    write_json(
+        audit_path,
+        {
+            "checked_at_utc": datetime.now(UTC).isoformat(),
+            "question_paper_id": check.expected_paper_id,
+            "audits": audits,
+        },
+    )
+    return audits
 
 
 def write_retrieval_report(outcomes: dict[str, Any], path: Path) -> None:
