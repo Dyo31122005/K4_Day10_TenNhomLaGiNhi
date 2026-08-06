@@ -5,7 +5,7 @@ import {
   Plus, Moon, Sun, Send, Copy,
   ThumbsUp, ThumbsDown, Sparkles, BarChart2, Database, Clock, Hash,
   Bot, Layers, Paperclip, Image as ImageIcon, Mic, Globe, Code2,
-  CircleCheck, Circle, AlertCircle,
+  CircleCheck, Circle, AlertCircle, X, ExternalLink, Users, Calendar, Tag,
 } from "lucide-react";
 
 // ─── Config ─────────────────────────────────────────────────────────────────
@@ -26,10 +26,22 @@ type Message = {
   timestamp: Date;
   sources?: Source[];
   provider?: string | null;
+  dataset?: Dataset;
 };
 
 type DatasetInfo = { ready: boolean; paper_count: number | null; collection_name: string | null };
 type HealthResponse = { status: string; datasets: Record<Dataset, DatasetInfo> };
+
+type PaperDetail = {
+  paper_id: string;
+  title: string;
+  authors_joined: string;
+  published: string;
+  categories_joined: string;
+  summary: string;
+  abs_url?: string | null;
+  pdf_url?: string | null;
+};
 
 const DATASET_LABEL: Record<Dataset, string> = {
   baseline: "Baseline",
@@ -85,6 +97,128 @@ function TypingIndicator() {
           style={{ animationDelay: `${i * 0.12}s` }}
         />
       ))}
+    </div>
+  );
+}
+
+// ─── Paper detail modal — click a source to verify the claim directly ──────
+
+function PaperModal({
+  dataset, paperId, darkMode, onClose,
+}: { dataset: Dataset; paperId: string; darkMode: boolean; onClose: () => void }) {
+  const [paper, setPaper] = useState<PaperDetail | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setPaper(null);
+    setError(null);
+    fetch(`${API_URL}/paper?dataset=${encodeURIComponent(dataset)}&paper_id=${encodeURIComponent(paperId)}`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (cancelled) return;
+        if (!res.ok) {
+          setError(data.detail ?? "Không tải được chi tiết paper.");
+          return;
+        }
+        setPaper(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(`Không kết nối được backend tại ${API_URL}.`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [dataset, paperId]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
+      <div
+        className={cn(
+          "w-full max-w-lg max-h-[80vh] overflow-y-auto rounded-2xl border p-5 shadow-xl",
+          darkMode ? "bg-slate-800 border-slate-700" : "bg-white border-[#E2E8F0]"
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <span className={cn("text-xs font-semibold uppercase tracking-wide", darkMode ? "text-slate-500" : "text-[#94A3B8]")}>
+            Kiểm chứng nguồn — {DATASET_LABEL[dataset]}
+          </span>
+          <button
+            onClick={onClose}
+            className={cn("p-1 rounded-lg shrink-0", darkMode ? "hover:bg-slate-700 text-slate-400" : "hover:bg-slate-100 text-[#64748B]")}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        {!paper && !error && (
+          <div className={cn("text-sm", darkMode ? "text-slate-400" : "text-[#64748B]")}>Đang tải...</div>
+        )}
+
+        {paper && (
+          <div className="space-y-3">
+            <h3 className={cn("text-base font-bold leading-snug", darkMode ? "text-slate-100" : "text-[#0F172A]")}>
+              {paper.title}
+            </h3>
+
+            <div className={cn("flex flex-wrap gap-x-4 gap-y-1 text-xs", darkMode ? "text-slate-400" : "text-[#64748B]")}>
+              {paper.authors_joined && (
+                <span className="flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5" /> {paper.authors_joined}
+                </span>
+              )}
+              {paper.published && (
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" /> {paper.published}
+                </span>
+              )}
+              {paper.categories_joined && (
+                <span className="flex items-center gap-1">
+                  <Tag className="w-3.5 h-3.5" /> {paper.categories_joined}
+                </span>
+              )}
+            </div>
+
+            <p className={cn("text-[10px] font-mono break-all", darkMode ? "text-slate-500" : "text-[#94A3B8]")}>
+              paper_id (DOI): {paper.paper_id}
+            </p>
+
+            <div className={cn("rounded-lg border p-3 text-sm leading-relaxed", darkMode ? "bg-slate-900/40 border-slate-700/60 text-slate-300" : "bg-slate-50 border-[#E2E8F0] text-[#0F172A]")}>
+              {paper.summary}
+            </div>
+
+            {(paper.abs_url || paper.pdf_url) && (
+              <div className="flex gap-3 text-xs">
+                {paper.abs_url && (
+                  <a href={paper.abs_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-indigo-500 hover:underline">
+                    <ExternalLink className="w-3.5 h-3.5" /> Xem bài gốc
+                  </a>
+                )}
+                {paper.pdf_url && (
+                  <a href={paper.pdf_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-indigo-500 hover:underline">
+                    <ExternalLink className="w-3.5 h-3.5" /> PDF
+                  </a>
+                )}
+              </div>
+            )}
+
+            <p className={cn("text-[11px] pt-1 border-t", darkMode ? "text-slate-500 border-slate-700/60" : "text-[#94A3B8] border-slate-100")}>
+              Đối chiếu nội dung trên với câu trả lời của agent để tự kiểm tra đúng/sai — không chỉ tin lời agent.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -166,7 +300,9 @@ function EmptyState({ darkMode, onPrompt }: { darkMode: boolean; onPrompt: (p: s
 
 // ─── Message bubble ─────────────────────────────────────────────────────────
 
-function MessageBubble({ msg, darkMode, onCopy }: { msg: Message; darkMode: boolean; onCopy: () => void }) {
+function MessageBubble({
+  msg, darkMode, onCopy, onSelectSource,
+}: { msg: Message; darkMode: boolean; onCopy: () => void; onSelectSource: (paperId: string) => void }) {
   const [reacted, setReacted] = useState<string | null>(null);
 
   if (msg.role === "system") {
@@ -208,12 +344,21 @@ function MessageBubble({ msg, darkMode, onCopy }: { msg: Message; darkMode: bool
 
           {msg.sources && msg.sources.length > 0 && (
             <div className={cn("mt-2 space-y-1 border-t pt-2 text-[11px]", isUser ? "border-white/20 text-white/80" : darkMode ? "border-slate-700/60 opacity-80" : "border-slate-100 opacity-80")}>
-              <p className="font-semibold">Nguồn:</p>
+              <p className="font-semibold">Nguồn (bấm để kiểm chứng):</p>
               {msg.sources.map((s) => (
-                <p key={s.paper_id} title={s.paper_id} className="truncate">
+                <button
+                  key={s.paper_id}
+                  type="button"
+                  title={s.paper_id}
+                  onClick={() => onSelectSource(s.paper_id)}
+                  className={cn(
+                    "block w-full truncate text-left underline decoration-dotted underline-offset-2",
+                    isUser ? "hover:text-white" : "hover:text-indigo-500"
+                  )}
+                >
                   • {s.title}
                   {s.score != null && ` (${s.score.toFixed(3)})`}
-                </p>
+                </button>
               ))}
             </div>
           )}
@@ -276,8 +421,14 @@ function DatasetItem({
 // ─── Right panel — real pipeline trace, not mock data ──────────────────────
 
 function RightPanel({
-  darkMode, health, dataset, lastAssistant,
-}: { darkMode: boolean; health: HealthResponse | null; dataset: Dataset; lastAssistant: Message | undefined }) {
+  darkMode, health, dataset, lastAssistant, onSelectSource,
+}: {
+  darkMode: boolean;
+  health: HealthResponse | null;
+  dataset: Dataset;
+  lastAssistant: Message | undefined;
+  onSelectSource: (paperId: string) => void;
+}) {
   const cardCls = cn("rounded-xl border p-4 mb-3", darkMode ? "bg-slate-800/60 border-slate-700/60" : "bg-slate-50 border-[#E2E8F0]");
   const labelCls = cn("text-xs font-semibold uppercase tracking-wide mb-3", darkMode ? "text-slate-500" : "text-[#94A3B8]");
   const subCls = cn("text-xs", darkMode ? "text-slate-500" : "text-[#64748B]");
@@ -326,7 +477,7 @@ function RightPanel({
         ) : (
           <div className={subCls}>Chưa có câu trả lời nào qua mode agent.</div>
         )}
-        <div className={cn("mt-1.5", subCls)}>Thứ tự thử: openrouter → ollama → gemini → deepseek → openai</div>
+        <div className={cn("mt-1.5", subCls)}>Thứ tự thử: openai → openrouter → gemini → deepseek → ollama</div>
       </div>
 
       {/* Sources of the last answer */}
@@ -335,10 +486,18 @@ function RightPanel({
         {lastAssistant?.sources && lastAssistant.sources.length > 0 ? (
           <div className="space-y-2">
             {lastAssistant.sources.map((s) => (
-              <div key={s.paper_id} className={cn("text-xs p-2 rounded-lg", darkMode ? "bg-slate-700/40" : "bg-white border border-[#E2E8F0]")}>
+              <button
+                key={s.paper_id}
+                type="button"
+                onClick={() => onSelectSource(s.paper_id)}
+                className={cn(
+                  "w-full text-left text-xs p-2 rounded-lg transition-colors",
+                  darkMode ? "bg-slate-700/40 hover:bg-slate-700/70" : "bg-white border border-[#E2E8F0] hover:border-indigo-200"
+                )}
+              >
                 <div className={cn("font-medium truncate", darkMode ? "text-slate-300" : "text-[#0F172A]")} title={s.title}>{s.title}</div>
                 <div className={subCls}>{s.paper_id}{s.score != null && ` · score ${s.score.toFixed(3)}`}</div>
-              </div>
+              </button>
             ))}
           </div>
         ) : (
@@ -362,6 +521,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [selectedPaper, setSelectedPaper] = useState<{ dataset: Dataset; paperId: string } | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -402,7 +562,8 @@ export default function ChatPage() {
     const question = (overridePrompt ?? input).trim();
     if (!question || loading) return;
 
-    setMessages((m) => [...m, { id: Date.now().toString(), role: "user", content: question, timestamp: new Date() }]);
+    const askedDataset = dataset;
+    setMessages((m) => [...m, { id: Date.now().toString(), role: "user", content: question, timestamp: new Date(), dataset: askedDataset }]);
     setInput("");
     setLoading(true);
 
@@ -410,7 +571,7 @@ export default function ChatPage() {
       const res = await fetch(`${API_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, dataset, mode }),
+        body: JSON.stringify({ question, dataset: askedDataset, mode }),
       });
       const data = await res.json();
 
@@ -426,6 +587,7 @@ export default function ChatPage() {
         sources: data.sources,
         provider: data.provider,
         timestamp: new Date(),
+        dataset: askedDataset,
       }]);
     } catch {
       setMessages((m) => [...m, {
@@ -552,6 +714,7 @@ export default function ChatPage() {
                     msg={msg}
                     darkMode={darkMode}
                     onCopy={() => { navigator.clipboard.writeText(msg.content); showToast("Đã copy câu trả lời"); }}
+                    onSelectSource={(paperId) => setSelectedPaper({ dataset: msg.dataset ?? dataset, paperId })}
                   />
                 ))}
                 {loading && (
@@ -620,7 +783,13 @@ export default function ChatPage() {
 
           {rightPanelOpen && (
             <aside className={cn("w-[280px] shrink-0 border-l flex flex-col overflow-y-auto", darkMode ? "bg-[#1E293B] border-slate-700/60" : "bg-white border-[#E2E8F0]")} style={{ scrollbarWidth: "none" }}>
-              <RightPanel darkMode={darkMode} health={health} dataset={dataset} lastAssistant={lastAssistant} />
+              <RightPanel
+                darkMode={darkMode}
+                health={health}
+                dataset={dataset}
+                lastAssistant={lastAssistant}
+                onSelectSource={(paperId) => setSelectedPaper({ dataset: lastAssistant?.dataset ?? dataset, paperId })}
+              />
             </aside>
           )}
         </div>
@@ -630,6 +799,15 @@ export default function ChatPage() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-4 py-2 rounded-lg shadow-lg">
           {toast}
         </div>
+      )}
+
+      {selectedPaper && (
+        <PaperModal
+          dataset={selectedPaper.dataset}
+          paperId={selectedPaper.paperId}
+          darkMode={darkMode}
+          onClose={() => setSelectedPaper(null)}
+        />
       )}
     </div>
   );

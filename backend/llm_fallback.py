@@ -7,11 +7,13 @@ import requests
 
 from core.config import Settings, require_llm_credentials
 
-# Order requested for the chatbot demo. Does not change core/config.py or
+# OpenAI first: that's what the whole team is actually using, so it's the
+# fastest path to a working answer. The rest stay as a fallback safety net if
+# OpenAI's key/quota ever fails. Does not change core/config.py or
 # retrieval/llm.py — each candidate is just a differently-configured copy of
 # the shared `Settings`, so the existing (unmodified) `build_llm`/`build_agent`
 # pick it up naturally.
-_CANDIDATE_ORDER = ["openrouter", "ollama", "gemini", "deepseek", "openai"]
+_CANDIDATE_ORDER = ["openai", "openrouter", "gemini", "deepseek", "ollama"]
 
 _DEEPSEEK_BASE_URL = "https://api.deepseek.com"
 
@@ -73,18 +75,30 @@ def resolve_llm_settings(settings: Settings) -> tuple[Settings, str]:
     Only checks that credentials exist (and, for Ollama, that the local server
     answers) — it does not spend an API call verifying the key is valid, so a
     stale/revoked key still surfaces as a runtime error on the first real
-    request rather than being skipped here.
+    request rather than being skipped here. Kept for callers that just need
+    "which provider would be tried first" (e.g. a status display); actual
+    chat requests should use `iter_llm_candidates` so a mid-chain failure
+    (expired key, no credits, rate limit) falls through to the next provider.
     """
-    errors: list[str] = []
+    for name, candidate in iter_llm_candidates(settings):
+        return candidate, name
+    raise RuntimeError("No LLM provider available: no candidate has usable credentials.")
+
+
+def iter_llm_candidates(settings: Settings):
+    """Yield every candidate with usable credentials, in fallback order.
+
+    Unlike `resolve_llm_settings`, this does not stop at the first candidate —
+    callers should try each in turn and move on when a real API call fails
+    (e.g. HTTP 402/401/429), since a present API key does not guarantee the
+    account can actually serve a request right now.
+    """
     for name in _CANDIDATE_ORDER:
         candidate = _settings_for_candidate(settings, name)
         if candidate is None:
-            errors.append(f"{name}: no credential / unreachable")
             continue
         try:
             require_llm_credentials(candidate)
-            return candidate, name
-        except RuntimeError as exc:
-            errors.append(f"{name}: {exc}")
-
-    raise RuntimeError("No LLM provider available. Tried: " + "; ".join(errors))
+        except RuntimeError:
+            continue
+        yield name, candidate

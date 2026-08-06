@@ -1,5 +1,22 @@
 @import "tailwindcss";
 
+/* Brand palette borrowed from Batch03-K4-AI-Product-Hackathon's globals.css
+   (brand blue #124f8c / #38bdf8, destructive red oklch(0.577 0.245 27.325)).
+   Overriding Tailwind's indigo and violet scale here reskins every existing
+   indigo and violet utility class in page.tsx to blue plus red without
+   touching the component markup. */
+@theme {
+  --color-indigo-50: #eef4fa;
+  --color-indigo-200: #b8d0e8;
+  --color-indigo-300: #8fb4d8;
+  --color-indigo-400: #4a86bd;
+  --color-indigo-500: #1f649f;
+  --color-indigo-600: #124f8c;
+  --color-indigo-700: #0b355f;
+  --color-violet-500: oklch(0.637 0.237 25.331);
+  --color-violet-600: oklch(0.577 0.245 27.325);
+}
+
 :root {
   --background: #f8fafc;
   --foreground: #0f172a;

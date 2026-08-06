@@ -19,7 +19,7 @@ from pydantic import BaseModel
 
 from core.config import load_settings
 from core.utils import read_json
-from llm_fallback import resolve_llm_settings
+from llm_fallback import iter_llm_candidates
 from retrieval.agent import build_agent, run_agent_question
 from retrieval.index import LocalEmbeddingIndex
 from retrieval.qa import answer_question
@@ -41,8 +41,27 @@ app.add_middleware(
 )
 
 _index_cache: dict[str, LocalEmbeddingIndex] = {}
-_agent_cache: dict[str, object] = {}
-_agent_provider: dict[str, str] = {}
+
+
+def _load_index_local(embeddings_path: Path) -> LocalEmbeddingIndex:
+    """Load an index manifest but ignore its recorded `persist_path`.
+
+    `LocalEmbeddingIndex.load()` trusts the absolute `persist_path` baked into
+    the manifest at build time -- but that path reflects whichever teammate's
+    machine last regenerated the embeddings (seen so far: `D:\\Anh Tuan\\...`,
+    `H:\\Lab_day10\\...`), not this machine. Chroma then raises
+    `chromadb.errors.NotFoundError` for a collection that in fact exists, just
+    under `settings.paths.chroma_dir` locally. Rebuilding the same object via
+    the public constructor with the local path sidesteps that without editing
+    the shared retrieval/index.py contract.
+    """
+    payload = read_json(embeddings_path)
+    return LocalEmbeddingIndex(
+        settings=settings,
+        collection_name=payload["collection_name"],
+        documents=payload["documents"],
+        persist_path=settings.paths.chroma_dir,
+    )
 
 
 def _get_index(dataset: str) -> LocalEmbeddingIndex:
@@ -58,23 +77,40 @@ def _get_index(dataset: str) -> LocalEmbeddingIndex:
             f"'{dataset}' chưa được build (thiếu {path.name}). "
             f"Đợi role RAG/lead chạy xong checkpoint tương ứng rồi thử lại.",
         )
-    index = LocalEmbeddingIndex.load(settings, embeddings_path=path)
+    try:
+        index = _load_index_local(path)
+    except Exception as exc:
+        raise HTTPException(500, f"Không load được index '{dataset}': {exc}") from exc
     _index_cache[dataset] = index
     return index
 
 
-def _get_agent(dataset: str):
-    if dataset in _agent_cache:
-        return _agent_cache[dataset]
-    index = _get_index(dataset)
-    try:
-        candidate_settings, provider_used = resolve_llm_settings(settings)
-    except RuntimeError as exc:
-        raise HTTPException(500, str(exc)) from exc
-    agent = build_agent(candidate_settings, index)
-    _agent_cache[dataset] = agent
-    _agent_provider[dataset] = provider_used
-    return agent
+def _answer_with_fallback(question: str, index: LocalEmbeddingIndex) -> tuple[str, str]:
+    """Try each LLM candidate in order until one actually answers.
+
+    A present API key does not mean the account can serve a request right now
+    (expired key, out of credits, rate limited) -- those only surface once we
+    call the model. So unlike a static "pick a provider" resolver, this tries
+    the real call per candidate and only moves on when it fails.
+    """
+    attempted: list[str] = []
+    last_error: Exception | None = None
+    for name, candidate_settings in iter_llm_candidates(settings):
+        attempted.append(name)
+        try:
+            agent = build_agent(candidate_settings, index)
+            answer = run_agent_question(agent, question)
+            return answer, name
+        except Exception as exc:  # noqa: BLE001 - genuinely any provider/network failure should fall through
+            last_error = exc
+            continue
+
+    if not attempted:
+        raise HTTPException(500, "Không có LLM provider nào có credential khả dụng.")
+    raise HTTPException(
+        500,
+        f"Đã thử hết provider ({', '.join(attempted)}) nhưng đều lỗi. Lỗi cuối cùng: {last_error}",
+    )
 
 
 class ChatRequest(BaseModel):
@@ -119,6 +155,36 @@ def health():
     }
 
 
+class PaperDetail(BaseModel):
+    paper_id: str
+    title: str
+    authors_joined: str
+    published: str
+    categories_joined: str
+    summary: str
+    abs_url: str | None = None
+    pdf_url: str | None = None
+
+
+@app.get("/paper", response_model=PaperDetail)
+def get_paper(dataset: str, paper_id: str):
+    index = _get_index(dataset)
+    record = index.lookup(paper_id)
+    if not record:
+        raise HTTPException(404, f"Không tìm thấy paper_id={paper_id!r} trong dataset '{dataset}'.")
+    metadata = record["metadata"]
+    return PaperDetail(
+        paper_id=metadata["paper_id"],
+        title=metadata["title"],
+        authors_joined=metadata.get("authors_joined", ""),
+        published=metadata.get("published", ""),
+        categories_joined=metadata.get("categories_joined", ""),
+        summary=metadata.get("summary", ""),
+        abs_url=metadata.get("abs_url"),
+        pdf_url=metadata.get("pdf_url"),
+    )
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(payload: ChatRequest):
     question = payload.question.strip()
@@ -134,9 +200,8 @@ def chat(payload: ChatRequest):
         ]
         return ChatResponse(answer=result.answer, sources=sources, dataset=payload.dataset, mode="qa")
 
-    agent = _get_agent(payload.dataset)
-    answer = run_agent_question(agent, question)
     index = _get_index(payload.dataset)
+    answer, provider_used = _answer_with_fallback(question, index)
     hits = index.search(question, top_k=settings.top_k)
     sources = [Source(paper_id=h.paper_id, title=h.title, score=round(h.score, 4)) for h in hits]
     return ChatResponse(
@@ -144,5 +209,5 @@ def chat(payload: ChatRequest):
         sources=sources,
         dataset=payload.dataset,
         mode="agent",
-        provider=_agent_provider.get(payload.dataset),
+        provider=provider_used,
     )
