@@ -1,0 +1,62 @@
+{
+  "built_at_utc": "2026-08-06T09:48:17.438989+00:00",
+  "variant": "corrupted",
+  "clean_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/clean/papers_clean_corrupted.csv",
+  "manifest_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/embeddings/papers_embeddings_corrupted.json",
+  "persist_path": "/Users/empteax214/Documents/vinai/K4_Day10_TenNhomLaGiNhi/data/chroma",
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "collection_signature": {
+    "collection_name": "papers-corrupted",
+    "count": 23,
+    "documents_sha256": "b48cf7f30042c4f749b78c011d2fc5d04f7cdfba78cc341abff15f843f1dba3a"
+  },
+  "verification": {
+    "collection_name": "papers-corrupted",
+    "clean_rows": 23,
+    "manifest_documents": 23,
+    "collection_documents": 23,
+    "paper_ids_match": true,
+    "contents_match": true,
+    "embedding_model_match": true,
+    "reranker_model_match": true,
+    "passed": true
+  },
+  "smoke_result": {
+    "query": "Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents",
+    "expected_paper_id": "10.1111/exsy.70341",
+    "search_paper_ids": [
+      "10.36227/techrxiv.177272838.89432844/v1",
+      "10.55041/isjem07213",
+      "10.20944/preprints202604.0339.v1",
+      "10.35314/3y9hy151"
+    ],
+    "search_titles": [
+      "A Survey of (Deep RAG) Deep Retrieval Augmented Generation and Reasoning in Large Language Models",
+      "Speculative Retrieval-Augmented Generation for Cost-Efficient Large Language Model Inference",
+      "Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation",
+      "Implementation of Retrieval-Augmented Generation Method on Large Language Model for Development of Campus Service and Information Chatbot"
+    ],
+    "search_scores": [
+      0.993171,
+      0.988288,
+      0.985381,
+      0.979198
+    ],
+    "vector_scores": [
+      0.637047,
+      0.576218,
+      0.603015,
+      0.497277
+    ],
+    "rerank_logits": [
+      4.979706,
+      4.435386,
+      4.210739,
+      3.851704
+    ],
+    "lookup_paper_id": null,
+    "search_hit": false,
+    "lookup_hit": false
+  }
+}

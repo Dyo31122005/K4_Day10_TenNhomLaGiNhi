@@ -43,6 +43,22 @@ app.add_middleware(
 _index_cache: dict[str, LocalEmbeddingIndex] = {}
 
 
+def _metadata_text(value: object) -> str:
+    """Keep legacy manifests from exposing pandas missing-value markers in the API.
+
+    `LocalEmbeddingIndex._build_documents()` already guards against this for
+    freshly-built manifests (see `_clean_scalar_text` in retrieval/index.py),
+    but older manifests built before that fix can still carry the literal
+    string "nan"/"none"/etc. from a CSV round-trip. This is the API-layer
+    safety net for those.
+    """
+
+    if value is None:
+        return ""
+    text = str(value).strip()
+    return "" if text.lower() in {"nan", "none", "null", "nat"} else text
+
+
 def _get_index(dataset: str) -> LocalEmbeddingIndex:
     if dataset not in DATASET_PATHS:
         raise HTTPException(400, f"Unknown dataset '{dataset}'. Expected one of {list(DATASET_PATHS)}.")
@@ -153,12 +169,12 @@ def get_paper(dataset: str, paper_id: str):
         raise HTTPException(404, f"Không tìm thấy paper_id={paper_id!r} trong dataset '{dataset}'.")
     metadata = record["metadata"]
     return PaperDetail(
-        paper_id=metadata["paper_id"],
-        title=metadata["title"],
-        authors_joined=metadata.get("authors_joined", ""),
-        published=metadata.get("published", ""),
-        categories_joined=metadata.get("categories_joined", ""),
-        summary=metadata.get("summary", ""),
+        paper_id=_metadata_text(metadata["paper_id"]),
+        title=_metadata_text(metadata["title"]),
+        authors_joined=_metadata_text(metadata.get("authors_joined")),
+        published=_metadata_text(metadata.get("published")),
+        categories_joined=_metadata_text(metadata.get("categories_joined")),
+        summary=_metadata_text(metadata.get("summary")),
         abs_url=metadata.get("abs_url"),
         pdf_url=metadata.get("pdf_url"),
     )

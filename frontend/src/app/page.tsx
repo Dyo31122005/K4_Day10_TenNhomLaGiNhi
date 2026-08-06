@@ -194,9 +194,20 @@ function PaperModal({
               paper_id (DOI): {paper.paper_id}
             </p>
 
-            <div className={cn("rounded-lg border p-3 text-sm leading-relaxed", darkMode ? "bg-slate-900/40 border-slate-700/60 text-slate-300" : "bg-slate-50 border-[#E2E8F0] text-[#0F172A]")}>
-              {paper.summary}
-            </div>
+            {paper.summary.trim() ? (
+              <div className={cn("rounded-lg border p-3 text-sm leading-relaxed", darkMode ? "bg-slate-900/40 border-slate-700/60 text-slate-300" : "bg-slate-50 border-[#E2E8F0] text-[#0F172A]")}>
+                {paper.summary}
+              </div>
+            ) : (
+              <div className={cn("flex items-start gap-2 rounded-lg border p-3 text-sm leading-relaxed", darkMode ? "bg-amber-500/10 border-amber-400/20 text-amber-200" : "bg-amber-50 border-amber-200 text-amber-800")}>
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  {dataset === "corrupted"
+                    ? "Không có tóm tắt: trường summary đã bị làm rỗng có chủ đích trong bộ dữ liệu Corrupted. Đây là lỗi chất lượng dữ liệu đang được minh họa, không phải lỗi giao diện."
+                    : "Không có tóm tắt trong bộ dữ liệu này."}
+                </span>
+              </div>
+            )}
 
             {(paper.abs_url || paper.pdf_url) && (
               <div className="flex gap-3 text-xs">
