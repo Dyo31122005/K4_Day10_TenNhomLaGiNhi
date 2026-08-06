@@ -50,6 +50,9 @@ def build_agent_tools(index: LocalEmbeddingIndex) -> list[Any]:
                 f"paper_id: {result.paper_id}\n"
                 f"title: {result.title}\n"
                 f"score: {result.score:.4f}\n"
+                f"published: {result.metadata.get('published', '')}\n"
+                f"categories: {result.metadata.get('categories_joined', '')}\n"
+                f"authors: {result.metadata.get('authors_joined', '')}\n"
                 f"{result.content}"
             )
         return "\n\n".join(lines)
@@ -60,10 +63,14 @@ def build_agent_tools(index: LocalEmbeddingIndex) -> list[Any]:
         record = index.lookup(paper_id_or_title)
         if not record:
             return f"collection: {index.collection_name}\nNo exact paper match found."
+        metadata = record.get("metadata", {})
         return (
             f"collection: {index.collection_name}\n"
             f"paper_id: {record['paper_id']}\n"
             f"title: {record['title']}\n"
+            f"published: {metadata.get('published', '')}\n"
+            f"categories: {metadata.get('categories_joined', '')}\n"
+            f"authors: {metadata.get('authors_joined', '')}\n"
             f"{record['content']}"
         )
 

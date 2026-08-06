@@ -1,0 +1,66 @@
+[
+  {
+    "id": "q_001",
+    "question_type": "summary",
+    "question": "Provide a summary of the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'",
+    "ground_truth": "ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy.",
+    "agent_answer": "The paper titled \"Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\" by Wei Tian and Yuhao Zhou, published on August 1, 2026, addresses the challenges faced by Large Language Model (LLM) agents as their tool repositories expand significantly. Traditional flat retrieval methods struggle with issues like context overload and semantic collisions, leading to decreased selection accuracy.\n\nTo tackle these problems, the authors propose Hi-RAG, a Hierarchical Retrieval-Augmented Generation framework that utilizes a structured approach based on the Type Service Tool framework of the Model Context Protocol (MCP). The framework operates in two stages: \n\n1. **Stage 1** employs a hybrid retrieval strategy combining BM25 sparse retrieval with dense bi-encoder search, enhanced through Weighted Reciprocal Rank Fusion to efficiently identify candidate services.\n2. **Stage 2** involves type-aware re-ranking using a local heterogeneous graph, which integrates a domain-level gating mechanism and contextualized tool attention for accurate service scoring.\n\nAdditionally, the authors introduce MCPBench, a benchmark for hierarchical tool selection that includes 201 tools from 40 real enterprise services, highlighting that 23% of queries necessitate multi-service reasoning.\n\nExperimental results demonstrate that Hi-RAG enhances Top-1 accuracy by up to 7.5% for single-service and 10.0% for multi-service scenarios compared to Flat-RAG, while also reducing token consumption by up to 89% compared to full-context injection. The framework's scalability is validated through zero-shot evaluation on ToolLLM, which includes 16,464 tools, and formal analyses indicate that context growth is manageable relative to repository size.",
+    "tool_names": [
+      "lookup_paper"
+    ],
+    "tool_outputs": [
+      "collection: papers-baseline\npaper_id: 10.1111/exsy.70341\ntitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\npublished: 2026-08-01\ncategories: journal article\nauthors: Wei Tian, Yuhao Zhou\nTitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents | Authors: Wei Tian, Yuhao Zhou | Summary: ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy. We propose Hi\u2010RAG, a Hierarchical Retrieval\u2010Augmented Generation framework that exploits the Type Service Tool structure of the Model Context Protocol (MCP) via a principled coarse\u2010to\u2010fine pipeline. Stage 1 applies a Tool\u2010as\u2010Proxy hybrid retrieval strategy (BM25 sparse retrieval combined with dense bi\u2010encoder search, fused via Weighted Reciprocal Rank Fusion) to identify candidate services efficiently. Stage 2 performs type\u2010aware re\u2010ranking over a local heterogeneous graph, integrating a domain\u2010level gating mechanism with contextualised tool attention for precise service scoring. We further introduce MCPBench, the first benchmark for hierarchical tool selection, comprising 201 tools across 40 real\u2010enterprise services\u201423% of queries require multi\u2010service reasoning. Experiments across five LLMs show Hi\u2010RAG improves Top\u20101 accuracy by up to 7.5% (single\u2010service) and 10.0% (multi\u2010service) over Flat\u2010RAG, while reducing token consumption by up to 89% against full\u2010context injection. Comparisons with a strong late\u2010interaction baseline (ColBERT\u2010RAG) further confirm the superiority of Hi\u2010RAG. Zero\u2010shot evaluation on ToolLLM (16,464 tools) confirms scalability, and formal analyses establish context growth with respect to repository size."
+    ],
+    "used_retrieval_tool": true,
+    "collection_name": "papers-baseline",
+    "audit_status": "PASS"
+  },
+  {
+    "id": "q_002",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents'?",
+    "ground_truth": "Wei Tian, Yuhao Zhou",
+    "agent_answer": "The paper titled \"Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\" was authored by Wei Tian and Yuhao Zhou.",
+    "tool_names": [
+      "lookup_paper"
+    ],
+    "tool_outputs": [
+      "collection: papers-baseline\npaper_id: 10.1111/exsy.70341\ntitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\npublished: 2026-08-01\ncategories: journal article\nauthors: Wei Tian, Yuhao Zhou\nTitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents | Authors: Wei Tian, Yuhao Zhou | Summary: ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy. We propose Hi\u2010RAG, a Hierarchical Retrieval\u2010Augmented Generation framework that exploits the Type Service Tool structure of the Model Context Protocol (MCP) via a principled coarse\u2010to\u2010fine pipeline. Stage 1 applies a Tool\u2010as\u2010Proxy hybrid retrieval strategy (BM25 sparse retrieval combined with dense bi\u2010encoder search, fused via Weighted Reciprocal Rank Fusion) to identify candidate services efficiently. Stage 2 performs type\u2010aware re\u2010ranking over a local heterogeneous graph, integrating a domain\u2010level gating mechanism with contextualised tool attention for precise service scoring. We further introduce MCPBench, the first benchmark for hierarchical tool selection, comprising 201 tools across 40 real\u2010enterprise services\u201423% of queries require multi\u2010service reasoning. Experiments across five LLMs show Hi\u2010RAG improves Top\u20101 accuracy by up to 7.5% (single\u2010service) and 10.0% (multi\u2010service) over Flat\u2010RAG, while reducing token consumption by up to 89% against full\u2010context injection. Comparisons with a strong late\u2010interaction baseline (ColBERT\u2010RAG) further confirm the superiority of Hi\u2010RAG. Zero\u2010shot evaluation on ToolLLM (16,464 tools) confirms scalability, and formal analyses establish context growth with respect to repository size."
+    ],
+    "used_retrieval_tool": true,
+    "collection_name": "papers-baseline",
+    "audit_status": "PASS"
+  },
+  {
+    "id": "q_003",
+    "question_type": "date",
+    "question": "When was the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' published?",
+    "ground_truth": "2026-08-01",
+    "agent_answer": "The paper titled \"Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\" was published on August 1, 2026.",
+    "tool_names": [
+      "lookup_paper"
+    ],
+    "tool_outputs": [
+      "collection: papers-baseline\npaper_id: 10.1111/exsy.70341\ntitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\npublished: 2026-08-01\ncategories: journal article\nauthors: Wei Tian, Yuhao Zhou\nTitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents | Authors: Wei Tian, Yuhao Zhou | Summary: ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy. We propose Hi\u2010RAG, a Hierarchical Retrieval\u2010Augmented Generation framework that exploits the Type Service Tool structure of the Model Context Protocol (MCP) via a principled coarse\u2010to\u2010fine pipeline. Stage 1 applies a Tool\u2010as\u2010Proxy hybrid retrieval strategy (BM25 sparse retrieval combined with dense bi\u2010encoder search, fused via Weighted Reciprocal Rank Fusion) to identify candidate services efficiently. Stage 2 performs type\u2010aware re\u2010ranking over a local heterogeneous graph, integrating a domain\u2010level gating mechanism with contextualised tool attention for precise service scoring. We further introduce MCPBench, the first benchmark for hierarchical tool selection, comprising 201 tools across 40 real\u2010enterprise services\u201423% of queries require multi\u2010service reasoning. Experiments across five LLMs show Hi\u2010RAG improves Top\u20101 accuracy by up to 7.5% (single\u2010service) and 10.0% (multi\u2010service) over Flat\u2010RAG, while reducing token consumption by up to 89% against full\u2010context injection. Comparisons with a strong late\u2010interaction baseline (ColBERT\u2010RAG) further confirm the superiority of Hi\u2010RAG. Zero\u2010shot evaluation on ToolLLM (16,464 tools) confirms scalability, and formal analyses establish context growth with respect to repository size."
+    ],
+    "used_retrieval_tool": true,
+    "collection_name": "papers-baseline",
+    "audit_status": "PASS"
+  },
+  {
+    "id": "q_004",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents' belong to?",
+    "ground_truth": "journal article",
+    "agent_answer": "The paper \"Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\" belongs to the category of a journal article.",
+    "tool_names": [
+      "lookup_paper"
+    ],
+    "tool_outputs": [
+      "collection: papers-baseline\npaper_id: 10.1111/exsy.70341\ntitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents\npublished: 2026-08-01\ncategories: journal article\nauthors: Wei Tian, Yuhao Zhou\nTitle: Hi-RAG: A Hierarchical Retrieval-Augmented Generation Framework for Scalable and Generalisable Tool Selection in Large Language Model Agents | Authors: Wei Tian, Yuhao Zhou | Summary: ABSTRACT As tool repositories for Large Language Model (LLM) agents grow from dozens to hundreds of endpoints, flat retrieval paradigms that treat the repository as an unstructured list suffer from context overload, cross\u2010domain semantic collision and degraded selection accuracy. We propose Hi\u2010RAG, a Hierarchical Retrieval\u2010Augmented Generation framework that exploits the Type Service Tool structure of the Model Context Protocol (MCP) via a principled coarse\u2010to\u2010fine pipeline. Stage 1 applies a Tool\u2010as\u2010Proxy hybrid retrieval strategy (BM25 sparse retrieval combined with dense bi\u2010encoder search, fused via Weighted Reciprocal Rank Fusion) to identify candidate services efficiently. Stage 2 performs type\u2010aware re\u2010ranking over a local heterogeneous graph, integrating a domain\u2010level gating mechanism with contextualised tool attention for precise service scoring. We further introduce MCPBench, the first benchmark for hierarchical tool selection, comprising 201 tools across 40 real\u2010enterprise services\u201423% of queries require multi\u2010service reasoning. Experiments across five LLMs show Hi\u2010RAG improves Top\u20101 accuracy by up to 7.5% (single\u2010service) and 10.0% (multi\u2010service) over Flat\u2010RAG, while reducing token consumption by up to 89% against full\u2010context injection. Comparisons with a strong late\u2010interaction baseline (ColBERT\u2010RAG) further confirm the superiority of Hi\u2010RAG. Zero\u2010shot evaluation on ToolLLM (16,464 tools) confirms scalability, and formal analyses establish context growth with respect to repository size."
+    ],
+    "used_retrieval_tool": true,
+    "collection_name": "papers-baseline",
+    "audit_status": "PASS"
+  }
+]
